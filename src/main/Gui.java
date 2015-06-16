@@ -1,6 +1,7 @@
 package main;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,7 +11,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 
-import javax.swing.ButtonModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -155,6 +156,7 @@ public class Gui implements DownloaderListener {
 		songs.ensureCapacity(100);
 		songList = new JList<String>(songs);
 		songList.setAutoscrolls(true);
+		songList.setCellRenderer(new SongListRenderer());
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(10, 71, 461, 248);
 		scrollPane.setViewportView(songList);
@@ -258,6 +260,7 @@ public class Gui implements DownloaderListener {
 			progressBar.setValue(Downloader.getProgress());
 			notFoundNbText.setText("0");
 			notFoundNbText.setForeground(Color.black);
+			songList.updateUI();
 		}
 	}
 
@@ -300,6 +303,24 @@ public class Gui implements DownloaderListener {
 		if (failedNumber > 0) {
 			notFoundNbText.setForeground(Color.red);
 		}
-		// TODO modify songList to show if it succeeded or not		
+		songList.updateUI();
+	}
+	
+	private class SongListRenderer extends DefaultListCellRenderer {
+		
+		private static final long serialVersionUID = -6027297447224041122L;
+
+		@Override
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+														boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            
+            if (Downloader.getFailedSongs().contains(value.toString())) {
+            	setForeground(Color.red);
+            } else {
+            	setForeground(Color.black);
+            }
+            return(this);
+        }
 	}
 }

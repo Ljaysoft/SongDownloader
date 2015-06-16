@@ -35,6 +35,7 @@ public class Downloader {
 	private static String mp3End = ".mp3";
 	private static Boolean stop = false;
 	private static int progress = 0;
+	private static boolean sHasStarted;
 
 	private Downloader() {
 
@@ -77,6 +78,7 @@ public class Downloader {
 	public static void stop() {
 		synchronized (INSTANCE) {
 			stop = true;
+			sHasStarted = false;
 			progress = 0;
 		}
 	}
@@ -118,10 +120,14 @@ public class Downloader {
 		INSTANCE.mSongsNotFoundArray.clear();
 		String songTitle;
 		Boolean isSongFound;
+		synchronized (INSTANCE) {
+			sHasStarted = true;
+		}
 		for (int i = 0; i < INSTANCE.mSongs.length; i++) {
 			isSongFound = false;
 			synchronized (INSTANCE) {
 				if (stop) {
+					sHasStarted = false;
 					return;
 				}
 			}
@@ -288,5 +294,13 @@ public class Downloader {
 
 	public static int getFailedNumber() {
 		return INSTANCE.mSongsNotFoundArray.size();
+	}
+	
+	public static ArrayList<String> getFailedSongs() {
+		return INSTANCE.mSongsNotFoundArray;
+	}
+
+	public static boolean hasStarted() {
+		return sHasStarted;
 	}
 }
