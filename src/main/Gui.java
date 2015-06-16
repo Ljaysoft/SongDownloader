@@ -1,5 +1,6 @@
 package main;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 
+import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -36,6 +38,7 @@ public class Gui implements DownloaderListener {
 	private JTextField downloadDirText;
 	private JButton abortBtn;
 	private JProgressBar progressBar;
+	private JLabel notFoundNbText;
 	private int progress = 0;
 
 	/**
@@ -74,7 +77,7 @@ public class Gui implements DownloaderListener {
 		frmSongdownloader.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmSongdownloader.getContentPane().setLayout(null);
 
-		fileChooser = new JFileChooser();
+		fileChooser = new JFileChooser(); 
 		fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
 
 		JLabel lblSongList = new JLabel("Song list:");
@@ -149,6 +152,7 @@ public class Gui implements DownloaderListener {
 		frmSongdownloader.getContentPane().add(totalSongsText);
 		
 		songs = new DefaultListModel<String>();
+		songs.ensureCapacity(100);
 		songList = new JList<String>(songs);
 		songList.setAutoscrolls(true);
 		JScrollPane scrollPane = new JScrollPane();
@@ -179,6 +183,16 @@ public class Gui implements DownloaderListener {
 			}
 		});
 		frmSongdownloader.getContentPane().add(abortBtn);
+		
+		JLabel lblNotFound = new JLabel("Not found:");
+		lblNotFound.setBounds(365, 437, 81, 14);
+		frmSongdownloader.getContentPane().add(lblNotFound);
+		
+		notFoundNbText = new JLabel("0");
+		notFoundNbText.setHorizontalAlignment(SwingConstants.LEFT);
+		notFoundNbText.setBounds(425, 437, 46, 14);
+		notFoundNbText.setForeground(Color.black);
+		frmSongdownloader.getContentPane().add(notFoundNbText);
 	}
 
 	/**
@@ -242,6 +256,8 @@ public class Gui implements DownloaderListener {
 			downloadBtn.setText("Download");
 			Downloader.stop();
 			progressBar.setValue(Downloader.getProgress());
+			notFoundNbText.setText("0");
+			notFoundNbText.setForeground(Color.black);
 		}
 	}
 
@@ -267,14 +283,23 @@ public class Gui implements DownloaderListener {
 		return 0;
 	}
 
+	/**
+	 * callback from Downloader
+	 */
 	public void onFileDownloaded() {
 		progress++;
 		progressBar.setValue(Downloader.getProgress());		
 		if (Downloader.getProgress() == 100) {
-			downloadBtn.setText("Done! Click Here to view Files");
+			downloadBtn.setText("<HTML><center>Done!<P>Downloaded files here.<center></HTML>");
 			downloadBtn.setEnabled(true);
 			abortBtn.setEnabled(false);
 		} 
 		songsDownloadedText.setText(String.valueOf(progress));
+		int failedNumber = Downloader.getFailedNumber();
+		notFoundNbText.setText(String.valueOf(failedNumber));
+		if (failedNumber > 0) {
+			notFoundNbText.setForeground(Color.red);
+		}
+		// TODO modify songList to show if it succeeded or not		
 	}
 }

@@ -4,14 +4,19 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 /**
  * Downloads songs from a list of song titles to the specified directory
@@ -23,8 +28,10 @@ public class Downloader {
 	private static Downloader INSTANCE = new Downloader();
 	private static DownloaderListener mListener = null;
 	private String[] mSongs;
+	private final ArrayList<String> mSongsNotFoundArray = new ArrayList<String>();
 	private String dir;
 	private static String xsongsURL = "http://xsongs.pk/";
+	private static String mp3marsURL = "http://www.mp3mars.com/mp3/";
 	private static String mp3End = ".mp3";
 	private static Boolean stop = false;
 	private static int progress = 0;
@@ -41,6 +48,10 @@ public class Downloader {
 		return INSTANCE;
 	}
 
+	/**
+	 * Set listener for the downloader
+	 * @param listener
+	 */
 	public static void setListener(DownloaderListener listener) {
 		if (listener != null) {
 			mListener = listener;
@@ -104,15 +115,20 @@ public class Downloader {
 	 */
 	private static void start() throws MalformedURLException, IOException {
 		stop = false;
-		String song;
+		INSTANCE.mSongsNotFoundArray.clear();
+		String songTitle;
+		Boolean isSongFound;
 		for (int i = 0; i < INSTANCE.mSongs.length; i++) {
+			isSongFound = false;
 			synchronized (INSTANCE) {
 				if (stop) {
 					return;
 				}
 			}
-			song = INSTANCE.mSongs[i];
-			String songURL = song.replaceAll("[\\&()]", "").replaceAll("-", "")
+			songTitle = INSTANCE.mSongs[i];
+			
+			// search in xsongs
+			String songURL = songTitle.replaceAll("[\\&()]", "").replaceAll("-", "")
 					.replaceAll("\\s+", " ").replaceAll("\\s", "-")
 					.toLowerCase();
 			Document searchPageDoc = null;
@@ -122,15 +138,49 @@ public class Downloader {
 				e.printStackTrace();
 			}
 			if (searchPageDoc != null) {
-				String downloadPageURL = getDownloadURL(searchPageDoc,"rack", "(http:\\/\\/xsongs\\.pk\\/download-song\\/)");
+				String downloadPageURL = getDownloadPageUrlXSong(searchPageDoc,"rack", "(http:\\/\\/xsongs\\.pk\\/download-song\\/)");
 				if (downloadPageURL != null) {
-					if (saveUrl(INSTANCE.dir + "\\" + song + mp3End, downloadPageURL.replace("download-song", "downloads") + mp3End)) {
-						progress++;
-						if (mListener != null) {
-							mListener.onFileDownloaded();
+					if (saveUrl(INSTANCE.dir + "\\" + songTitle + mp3End, downloadPageURL.replace("download-song", "downloads") + mp3End)) {
+						isSongFound = true;
+					}
+				}
+			}
+			// search in mp3mars
+			if (!isSongFound) {
+				songURL = songTitle.replaceAll("[\\&()-]", "").replaceAll("\\s+", " ").replaceAll("\\s", "+");
+				searchPageDoc = null;
+				try {
+					//handle status 403
+					searchPageDoc = Jsoup.connect(mp3marsURL + songURL).userAgent("mozilla/5.0 (macintosh; intel mac os x 10_9_2) applewebkit/537.36 (khtml, like gecko) chrome/33.0.1750.152 safari/537.36").get();
+				} catch (SocketTimeoutException e) {
+					e.printStackTrace();
+				}
+				if (searchPageDoc != null) {
+					String downloadPageURL = getDownloadPageUrlMp3Mars(searchPageDoc,"dl", "(http:\\/\\/refs\\.pm\\/)");
+					if (downloadPageURL != null) {
+						Document downloadPageDoc = null;
+						try {
+							//handle status 403 again
+							downloadPageDoc = Jsoup.connect(downloadPageURL).userAgent("mozilla/5.0 (macintosh; intel mac os x 10_9_2) applewebkit/537.36 (khtml, like gecko) chrome/33.0.1750.152 safari/537.36").get();
+						} catch (SocketTimeoutException e) {
+							e.printStackTrace();
+						}
+						if (downloadPageDoc != null) {
+							String downloadURL = getDownloadUrlMp3Mars(downloadPageDoc, "script", "((?:http|https)(?::\\/{2}[\\w]+)(?:[\\/|\\.]?)(?:[^\\s\"]*))");
+							if (saveUrl(INSTANCE.dir + "\\" + songTitle + mp3End, downloadURL)) {
+								isSongFound = true;
+							}
 						}
 					}
 				}
+			}
+			// not found, add to the list
+			if (!isSongFound) {
+				INSTANCE.mSongsNotFoundArray.add(songTitle);
+			}
+			if (mListener != null) {
+				progress++;
+				mListener.onFileDownloaded();
 			}
 		}
 	}
@@ -150,7 +200,10 @@ public class Downloader {
 		BufferedInputStream in = null;
 		FileOutputStream fout = null;
 		try {
-			in = new BufferedInputStream(new URL(urlString).openStream());
+			URL url = new URL(urlString);
+			HttpURLConnection httpcon = (HttpURLConnection) url.openConnection(); 
+			httpcon.addRequestProperty("User-Agent", "Mozilla/4.76"); 
+			in = new BufferedInputStream(httpcon.getInputStream());
 			fout = new FileOutputStream(filename);
 			final byte data[] = new byte[1024];
 			int count;
@@ -175,17 +228,65 @@ public class Downloader {
 	 * @param body
 	 * @return
 	 */
-	private static String getDownloadURL(Document body, String sClass, String regex) {
+	private static String getDownloadPageUrlXSong(Document doc, String classStr, String regex) {
 		String url = null;
-		if (body != null) {
-			Element eClass = body.getElementsByClass(sClass).first();
+		if (doc != null) {
+			Element eClass = doc.getElementsByClass(classStr).first();
 			if (eClass != null) {
-				Element downloadurlelement = eClass.getElementsByAttributeValueMatching("href", regex).first();
-				if (downloadurlelement != null) {
-					url = downloadurlelement.attr("href");
+				Element downloadUrlElement = eClass.getElementsByAttributeValueMatching("href", regex).first();
+				if (downloadUrlElement != null) {
+					url = downloadUrlElement.attr("href");
 				}
 			}
 		}
 		return url;
+	}
+	
+	/**
+	 * 
+	 * @param doc
+	 * @param classStr
+	 * @param regex
+	 * @return
+	 */
+	private static String getDownloadPageUrlMp3Mars(Document doc, String classStr, String regex) {
+		String url = null;
+		if (doc != null) {
+			Elements classes = doc.getElementsByClass(classStr);
+			if (classes != null && classes.size() > 1) {
+				Element downloadUrlElement = classes.get(1).getElementsByAttributeValueMatching("href", regex).first();
+				if (downloadUrlElement != null) {
+					url = downloadUrlElement.attr("href");
+				}
+			}
+		}
+		return url;
+	}
+	
+	/**
+	 * 
+	 * @param doc
+	 * @param tag
+	 * @param regex
+	 * @return
+	 */
+	private static String getDownloadUrlMp3Mars(Document doc, String tag, String regex) {
+		String url = null;
+		if (doc != null) {
+			Element div = doc.select(tag).first();
+			if (div != null) {
+				String tagBlock = div.toString();
+				Pattern pattern = Pattern.compile(regex);
+				Matcher matcher = pattern.matcher(tagBlock);
+				if (matcher.find()) {
+					url = matcher.group(1);
+				}
+			}
+		}
+		return url;
+	}
+
+	public static int getFailedNumber() {
+		return INSTANCE.mSongsNotFoundArray.size();
 	}
 }
