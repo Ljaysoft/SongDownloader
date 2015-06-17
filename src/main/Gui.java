@@ -40,6 +40,9 @@ public class Gui implements DownloaderListener {
 	private JButton abortBtn;
 	private JProgressBar progressBar;
 	private JLabel notFoundNbText;
+	private JLabel dlSpeedValue;
+	private JLabel currDownloadTitleLbl;
+	private JLabel fileSizeValueLbl;
 	private int progress = 0;
 
 	/**
@@ -73,7 +76,7 @@ public class Gui implements DownloaderListener {
 		
 		frmSongdownloader = new JFrame();
 		frmSongdownloader.setTitle("SongDownloader");
-		frmSongdownloader.setBounds(100, 100, 487, 508);
+		frmSongdownloader.setBounds(100, 100, 487, 568);
 		frmSongdownloader.setResizable(false);
 		frmSongdownloader.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmSongdownloader.getContentPane().setLayout(null);
@@ -88,7 +91,7 @@ public class Gui implements DownloaderListener {
 		songListFilePathText = new JTextField();
 		songListFilePathText.setAutoscrolls(true);
 		songListFilePathText.setEditable(false);
-		songListFilePathText.setBounds(87, 15, 265, 20);
+		songListFilePathText.setBounds(88, 15, 306, 20);
 		frmSongdownloader.getContentPane().add(songListFilePathText);
 		songListFilePathText.setColumns(10);
 
@@ -98,7 +101,7 @@ public class Gui implements DownloaderListener {
 				chooseSongListFile();
 			}
 		});
-		btnFileChooser.setBounds(363, 11, 71, 32);
+		btnFileChooser.setBounds(404, 15, 67, 20);
 		frmSongdownloader.getContentPane().add(btnFileChooser);
 
 		JLabel lblNewLabel = new JLabel("Number of songs:");
@@ -126,30 +129,30 @@ public class Gui implements DownloaderListener {
 			}
 		});
 		downloadBtn.setEnabled(false);
-		downloadBtn.setBounds(10, 365, 145, 64);
+		downloadBtn.setBounds(10, 400, 145, 89);
 		frmSongdownloader.getContentPane().add(downloadBtn);
 
 		progressBar = new JProgressBar();
-		progressBar.setBounds(169, 455, 302, 14);
+		progressBar.setBounds(165, 515, 306, 14);
 		frmSongdownloader.getContentPane().add(progressBar);
 
 		JLabel lblProgress = new JLabel("Progress:");
-		lblProgress.setBounds(169, 437, 77, 14);
+		lblProgress.setBounds(165, 497, 77, 14);
 		frmSongdownloader.getContentPane().add(lblProgress);
 		
 		songsDownloadedText = new JLabel("0");
 		songsDownloadedText.setHorizontalAlignment(SwingConstants.RIGHT);
-		songsDownloadedText.setBounds(223, 437, 46, 14);
+		songsDownloadedText.setBounds(217, 497, 46, 14);
 		frmSongdownloader.getContentPane().add(songsDownloadedText);
 		
 		JLabel slashLabel = new JLabel("/");
 		slashLabel.setHorizontalAlignment(SwingConstants.LEFT);
-		slashLabel.setBounds(273, 437, 46, 14);
+		slashLabel.setBounds(273, 497, 46, 14);
 		frmSongdownloader.getContentPane().add(slashLabel);
 		
 		totalSongsText = new JLabel("0");
 		totalSongsText.setHorizontalAlignment(SwingConstants.LEFT);
-		totalSongsText.setBounds(290, 437, 46, 14);
+		totalSongsText.setBounds(290, 497, 46, 14);
 		frmSongdownloader.getContentPane().add(totalSongsText);
 		
 		songs = new DefaultListModel<String>();
@@ -164,17 +167,18 @@ public class Gui implements DownloaderListener {
 		frmSongdownloader.getContentPane().add(scrollPane);
 		
 		JLabel downloadDirLabel = new JLabel("Download directory:");
-		downloadDirLabel.setBounds(15, 330, 151, 24);
+		downloadDirLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		downloadDirLabel.setBounds(10, 330, 151, 24);
 		frmSongdownloader.getContentPane().add(downloadDirLabel);
 		
 		downloadDirText = new JTextField("");
 		downloadDirText.setAutoscrolls(true);
 		downloadDirText.setEditable(false);
-		downloadDirText.setBounds(151, 332, 320, 20);
+		downloadDirText.setBounds(131, 332, 248, 20);
 		frmSongdownloader.getContentPane().add(downloadDirText);
 		
 		abortBtn = new JButton("Abort");
-		abortBtn.setBounds(10, 440, 145, 29);
+		abortBtn.setBounds(10, 500, 145, 29);
 		abortBtn.setEnabled(false);
 		abortBtn.addActionListener(new ActionListener() {			
 			public void actionPerformed(ActionEvent arg0) {
@@ -187,28 +191,70 @@ public class Gui implements DownloaderListener {
 		frmSongdownloader.getContentPane().add(abortBtn);
 		
 		JLabel lblNotFound = new JLabel("Not found:");
-		lblNotFound.setBounds(365, 437, 81, 14);
+		lblNotFound.setBounds(365, 497, 67, 14);
 		frmSongdownloader.getContentPane().add(lblNotFound);
 		
 		notFoundNbText = new JLabel("0");
 		notFoundNbText.setHorizontalAlignment(SwingConstants.LEFT);
-		notFoundNbText.setBounds(425, 437, 46, 14);
+		notFoundNbText.setBounds(425, 497, 46, 14);
 		notFoundNbText.setForeground(Color.black);
 		frmSongdownloader.getContentPane().add(notFoundNbText);
+		
+		JLabel lblDownloadSpeed = new JLabel("Download speed:");
+		lblDownloadSpeed.setHorizontalAlignment(SwingConstants.LEFT);
+		lblDownloadSpeed.setBounds(165, 475, 107, 14);
+		frmSongdownloader.getContentPane().add(lblDownloadSpeed);
+		
+		dlSpeedValue = new JLabel("0");
+		dlSpeedValue.setHorizontalAlignment(SwingConstants.RIGHT);
+		dlSpeedValue.setBounds(252, 475, 55, 14);
+		frmSongdownloader.getContentPane().add(dlSpeedValue);
+		
+		JLabel lblKbs = new JLabel("kB/s");
+		lblKbs.setBounds(315, 475, 46, 14);
+		frmSongdownloader.getContentPane().add(lblKbs);
+		
+		JLabel lblDownloading = new JLabel("Downloading:");
+		lblDownloading.setBounds(165, 400, 77, 14);
+		frmSongdownloader.getContentPane().add(lblDownloading);
+		
+		currDownloadTitleLbl = new JLabel("");
+		currDownloadTitleLbl.setHorizontalAlignment(SwingConstants.LEFT);
+		currDownloadTitleLbl.setBounds(252, 400, 219, 39);
+		frmSongdownloader.getContentPane().add(currDownloadTitleLbl);
+		
+		JLabel lblFileSizeLbl = new JLabel("Song size:");
+		lblFileSizeLbl.setBounds(165, 450, 67, 14);
+		frmSongdownloader.getContentPane().add(lblFileSizeLbl);
+		
+		fileSizeValueLbl = new JLabel("0");
+		fileSizeValueLbl.setHorizontalAlignment(SwingConstants.RIGHT);
+		fileSizeValueLbl.setBounds(261, 450, 46, 14);
+		frmSongdownloader.getContentPane().add(fileSizeValueLbl);
+		
+		JLabel lblKb = new JLabel("kB");
+		lblKb.setBounds(315, 450, 46, 14);
+		frmSongdownloader.getContentPane().add(lblKb);
+		
+		JButton btnChooseDir = new JButton("Directory");
+		btnChooseDir.setBounds(382, 330, 89, 23);
+		btnChooseDir.addActionListener(new ActionListener() {			
+			public void actionPerformed(ActionEvent arg0) {
+				chooseDirectory();
+			}
+		});
+		frmSongdownloader.getContentPane().add(btnChooseDir);
 	}
-
+	
 	/**
-	 * download
+	 * choose Directory
 	 */
-	private void download() {
-		totalSongsText.setText(String.valueOf(songs.getSize()));
-		downloadBtn.setEnabled(false);
+	private void chooseDirectory() {
 		fileChooser.setFileFilter(new FileFilter() {
-
 			public String getDescription() {
 				return "Directory";
 			}
-
+			
 			public boolean accept(File f) {
 				if (f.isDirectory()) {
 					return true;
@@ -217,15 +263,24 @@ public class Gui implements DownloaderListener {
 				}
 			}
 		});
+		
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		int result = fileChooser.showOpenDialog(frmSongdownloader);
 		if (result == JFileChooser.APPROVE_OPTION) {
 			String dir = fileChooser.getSelectedFile().getAbsolutePath();
-			downloadDirText.setText(dir);			
-			Downloader.downLoad(Arrays.asList(songs.toArray()), dir);
+			downloadDirText.setText(dir);
+			Downloader.setDir(dir);
 			progressBar.setValue(Downloader.getProgress());
+			downloadBtn.setEnabled(true);
 		}
-		
+	}
+	/**
+	 * download
+	 */
+	private void download() {
+		totalSongsText.setText(String.valueOf(songs.getSize()));
+		downloadBtn.setEnabled(false);		
+		Downloader.downLoad(Arrays.asList(songs.toArray()));
 	}
 
 	/**
@@ -254,7 +309,6 @@ public class Gui implements DownloaderListener {
 			songListFilePathText.setText(selectedFile.getAbsolutePath());
 			songsDownloadedText.setText(String.valueOf(progress));
 			nbOfSongsText.setText(String.valueOf(parseSongList()));			
-			downloadBtn.setEnabled(true);
 			downloadBtn.setText("Download");
 			Downloader.stop();
 			progressBar.setValue(Downloader.getProgress());
@@ -293,10 +347,13 @@ public class Gui implements DownloaderListener {
 		progress++;
 		progressBar.setValue(Downloader.getProgress());		
 		if (Downloader.getProgress() == 100) {
-			downloadBtn.setText("<HTML><center>Done!<P>Downloaded files here.<center></HTML>");
+			downloadBtn.setText("<HTML><center>Click here to view files.<center></HTML>");			
 			downloadBtn.setEnabled(true);
 			abortBtn.setEnabled(false);
-		} 
+			onUpdateCurrentDownload("Download Done");
+		} else {
+			onUpdateCurrentDownload("");
+		}
 		songsDownloadedText.setText(String.valueOf(progress));
 		int failedNumber = Downloader.getFailedNumber();
 		notFoundNbText.setText(String.valueOf(failedNumber));
@@ -304,6 +361,15 @@ public class Gui implements DownloaderListener {
 			notFoundNbText.setForeground(Color.red);
 		}
 		songList.updateUI();
+	}
+	
+	public void onUpdateSpeed() {
+		dlSpeedValue.setText(String.valueOf(Downloader.getDownloadSpeed()));
+		fileSizeValueLbl.setText(String.valueOf(Downloader.getCurrentFileSize() / 1024));
+	}
+	
+	public void onUpdateCurrentDownload(String title) {
+		currDownloadTitleLbl.setText("<html>" + title + "</html>");
 	}
 	
 	private class SongListRenderer extends DefaultListCellRenderer {
@@ -322,5 +388,5 @@ public class Gui implements DownloaderListener {
             }
             return(this);
         }
-	}
+	}	
 }

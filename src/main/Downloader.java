@@ -30,12 +30,14 @@ public class Downloader {
 	private String[] mSongs;
 	private final ArrayList<String> mSongsNotFoundArray = new ArrayList<String>();
 	private String dir;
+	private int mDownloadSpeed = 0;
 	private static String xsongsURL = "http://xsongs.pk/";
 	private static String mp3marsURL = "http://www.mp3mars.com/mp3/";
 	private static String mp3End = ".mp3";
 	private static Boolean stop = false;
 	private static int progress = 0;
 	private static boolean sHasStarted;
+	private long currentFileSize = 0;
 
 	private Downloader() {
 
@@ -86,15 +88,13 @@ public class Downloader {
 	/**
 	 * Download the list of songs to a specific directory
 	 * @param list
-	 * @param dir
 	 */
-	public static void downLoad(List<Object> list, String dir) {
+	public static void downLoad(List<Object> list) {
 		if (list != null && list.size() > 0) {
 			INSTANCE.mSongs = new String[list.size()];
 			for (int i = 0; i < list.size(); i++) {
 				INSTANCE.mSongs[i] = (String) list.get(i);
 			}
-			INSTANCE.dir = dir;
 			Thread thread = new Thread(new Runnable() {
 				public void run() {
 					try {
@@ -139,16 +139,16 @@ public class Downloader {
 					.toLowerCase();
 			Document searchPageDoc = null;
 			try {
-				searchPageDoc = Jsoup.connect(xsongsURL + songURL + ".html").get();
+				searchPageDoc = Jsoup.parse(new URL(xsongsURL + songURL + ".html"), 10000);
 			} catch (SocketTimeoutException e) {
 				e.printStackTrace();
 			}
 			if (searchPageDoc != null) {
 				String downloadPageURL = getDownloadPageUrlXSong(searchPageDoc,"rack", "(http:\\/\\/xsongs\\.pk\\/download-song\\/)");
 				if (downloadPageURL != null) {
-					if (saveUrl(INSTANCE.dir + "\\" + songTitle + mp3End, downloadPageURL.replace("download-song", "downloads") + mp3End)) {
+					/*if (saveUrl(INSTANCE.dir + "\\" + songTitle + mp3End, downloadPageURL.replace("download-song", "downloads") + mp3End)) {
 						isSongFound = true;
-					}
+					}*/
 				}
 			}
 			// search in mp3mars
@@ -211,11 +211,27 @@ public class Downloader {
 			httpcon.addRequestProperty("User-Agent", "Mozilla/4.76"); 
 			in = new BufferedInputStream(httpcon.getInputStream());
 			fout = new FileOutputStream(filename);
-			final byte data[] = new byte[1024];
-			int count;
-			synchronized (INSTANCE) {
-				while ((count = in.read(data, 0, 1024)) != -1 && !stop) {						
-					fout.write(data, 0, count);						
+			final byte data[] = new byte[4096];
+			int count;			
+			long estimatedTime;
+			
+			if (mListener != null) {
+				mListener.onUpdateCurrentDownload(filename.substring(INSTANCE.dir.length() + 1, filename.length()));
+			}
+			
+			INSTANCE.currentFileSize = 0;
+			
+			long startTime = System.nanoTime();
+			
+			while ((count = in.read(data, 0, 4096)) != -1 && !stop) {
+				fout.write(data, 0, count);
+				synchronized (INSTANCE) {
+					INSTANCE.currentFileSize += count;
+					estimatedTime = System.nanoTime() - startTime;				
+					INSTANCE.mDownloadSpeed = (int) (INSTANCE.currentFileSize * 1000000000 / estimatedTime / 1024) ;
+					if (mListener != null) {
+						mListener.onUpdateSpeed();
+					}
 				}
 			}
 		} finally {
@@ -226,6 +242,7 @@ public class Downloader {
 				fout.close();
 			}
 		}
+		
 		return true;
 	}
 
@@ -302,5 +319,17 @@ public class Downloader {
 
 	public static boolean hasStarted() {
 		return sHasStarted;
+	}
+	
+	public static int getDownloadSpeed() {
+		return INSTANCE.mDownloadSpeed ;
+	}
+
+	public static long getCurrentFileSize() {
+		return INSTANCE.currentFileSize;
+	}
+
+	public static void setDir(String dir) {
+		INSTANCE.dir = dir;
 	}
 }
