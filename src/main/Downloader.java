@@ -38,6 +38,7 @@ public class Downloader {
 	private static int progress = 0;
 	private static boolean sHasStarted;
 	private long currentFileSize = 0;
+	private long totalDownloaded = 0;
 
 	private Downloader() {
 
@@ -118,6 +119,7 @@ public class Downloader {
 	private static void start() throws MalformedURLException, IOException {
 		stop = false;
 		INSTANCE.mSongsNotFoundArray.clear();
+		INSTANCE.totalDownloaded = 0;
 		String songTitle;
 		Boolean isSongFound;
 		synchronized (INSTANCE) {
@@ -227,6 +229,7 @@ public class Downloader {
 				fout.write(data, 0, count);
 				synchronized (INSTANCE) {
 					INSTANCE.currentFileSize += count;
+					INSTANCE.totalDownloaded += count;
 					estimatedTime = System.nanoTime() - startTime;				
 					INSTANCE.mDownloadSpeed = (int) (INSTANCE.currentFileSize * 1000000000 / estimatedTime / 1024) ;
 					if (mListener != null) {
@@ -322,7 +325,11 @@ public class Downloader {
 	}
 	
 	public static int getDownloadSpeed() {
-		return INSTANCE.mDownloadSpeed ;
+		return INSTANCE.mDownloadSpeed;
+	}
+	
+	public static long getTotalSize() {
+		return INSTANCE.totalDownloaded;
 	}
 
 	public static long getCurrentFileSize() {
