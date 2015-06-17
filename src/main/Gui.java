@@ -43,6 +43,7 @@ public class Gui implements DownloaderListener {
 	private JLabel dlSpeedValue;
 	private JLabel currDownloadTitleLbl;
 	private JLabel fileSizeValueLbl;
+	private JLabel totalDownloadedValueLbl;
 	private int progress = 0;
 
 	/**
@@ -129,7 +130,7 @@ public class Gui implements DownloaderListener {
 			}
 		});
 		downloadBtn.setEnabled(false);
-		downloadBtn.setBounds(10, 400, 145, 89);
+		downloadBtn.setBounds(10, 365, 145, 89);
 		frmSongdownloader.getContentPane().add(downloadBtn);
 
 		progressBar = new JProgressBar();
@@ -215,12 +216,12 @@ public class Gui implements DownloaderListener {
 		frmSongdownloader.getContentPane().add(lblKbs);
 		
 		JLabel lblDownloading = new JLabel("Downloading:");
-		lblDownloading.setBounds(165, 400, 77, 14);
+		lblDownloading.setBounds(165, 365, 77, 14);
 		frmSongdownloader.getContentPane().add(lblDownloading);
 		
 		currDownloadTitleLbl = new JLabel("");
 		currDownloadTitleLbl.setHorizontalAlignment(SwingConstants.LEFT);
-		currDownloadTitleLbl.setBounds(252, 400, 219, 39);
+		currDownloadTitleLbl.setBounds(253, 365, 218, 74);
 		frmSongdownloader.getContentPane().add(currDownloadTitleLbl);
 		
 		JLabel lblFileSizeLbl = new JLabel("Song size:");
@@ -244,6 +245,20 @@ public class Gui implements DownloaderListener {
 			}
 		});
 		frmSongdownloader.getContentPane().add(btnChooseDir);
+		
+		JLabel lblTotal = new JLabel("Total:");
+		lblTotal.setBounds(348, 450, 46, 14);
+		frmSongdownloader.getContentPane().add(lblTotal);
+		
+		totalDownloadedValueLbl = new JLabel("0");
+		totalDownloadedValueLbl.setHorizontalAlignment(SwingConstants.RIGHT);
+		totalDownloadedValueLbl.setBounds(386, 450, 46, 14);
+		frmSongdownloader.getContentPane().add(totalDownloadedValueLbl);
+		
+		JLabel lblMbs = new JLabel("MB/s");
+		lblMbs.setHorizontalAlignment(SwingConstants.LEFT);
+		lblMbs.setBounds(442, 450, 30, 14);
+		frmSongdownloader.getContentPane().add(lblMbs);
 	}
 	
 	/**
@@ -366,6 +381,7 @@ public class Gui implements DownloaderListener {
 	public void onUpdateSpeed() {
 		dlSpeedValue.setText(String.valueOf(Downloader.getDownloadSpeed()));
 		fileSizeValueLbl.setText(String.valueOf(Downloader.getCurrentFileSize() / 1024));
+		totalDownloadedValueLbl.setText(String.valueOf(Downloader.getTotalSize() / 1048576));
 	}
 	
 	public void onUpdateCurrentDownload(String title) {
