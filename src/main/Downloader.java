@@ -28,103 +28,21 @@ public class Downloader {
 
 	private static Downloader INSTANCE = new Downloader();
 	private static DownloaderListener mListener = null;
-	private static String xsongsURL = "http://xsongs.pk/";
-	private static String mp3marsURL = "http://www.mp3mars.com/mp3/";
 	private static String mp3End = ".mp3";
-	private static Boolean stop = false;
+	private static String mp3marsURL = "http://www.mp3mars.com/mp3/";
 	private static int progress = 0;
 	private static boolean sHasStarted;
-	/**
-	 * Download the list of songs to a specific directory
-	 * 
-	 * @param list
-	 */
-	public static void downLoad(List<Object> list) {
-		if (list != null && list.size() > 0) {
-			INSTANCE.mSongs = new String[list.size()];
-			for (int i = 0; i < list.size(); i++) {
-				INSTANCE.mSongs[i] = (String) list.get(i);
-			}
-			Thread thread = new Thread(new Runnable() {
-				public void run() {
-					try {
-						start();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			});
-			thread.start();
-		} else {
-			return;
-		}
-	}
-	public static long getCurrentFileSize() {
-		return INSTANCE.currentFileSize;
-	}
-	public static int getDownloadSpeed() {
-		return INSTANCE.mDownloadSpeed;
-	}
-	public static int getFailedNumber() {
-		return INSTANCE.mSongsNotFoundArray.size();
-	}
-	public static ArrayList<String> getFailedSongs() {
-		return INSTANCE.mSongsNotFoundArray;
-	}
-	/**
-	 * Get the static instance for callbacks
-	 * 
-	 * @return
-	 */
-	public static Downloader getInstance() {
-		return INSTANCE;
-	}
+	private static Boolean stop = false;
+	private static String xsongsURL = "http://xsongs.pk/";
+	private long currentFileSize = 0;
+	private String dir;
+	private int mDownloadSpeed = 0;
+	private String[] mSongs;
+	private final ArrayList<String> mSongsNotFoundArray = new ArrayList<String>();
+	private long totalDownloaded = 0;
 
-	/**
-	 * Returns the progress of download
-	 * 
-	 * @return [0-100]
-	 */
-	public static int getProgress() {
-		if (INSTANCE.mSongs != null && INSTANCE.mSongs.length > 0) {
-			return progress * 100 / INSTANCE.mSongs.length;
-		} else {
-			return 0;
-		}
-	}
+	private Downloader() {
 
-	public static long getTotalSize() {
-		return INSTANCE.totalDownloaded;
-	}
-
-	public static boolean hasStarted() {
-		return sHasStarted;
-	}
-
-	public static void setDir(String dir) {
-		INSTANCE.dir = dir;
-	}
-
-	/**
-	 * Set listener for the downloader
-	 * 
-	 * @param listener
-	 */
-	public static void setListener(DownloaderListener listener) {
-		if (listener != null) {
-			mListener = listener;
-		}
-	}
-
-	/**
-	 * Stop the download process
-	 */
-	public static void stop() {
-		synchronized (INSTANCE) {
-			stop = true;
-			sHasStarted = false;
-			progress = 0;
-		}
 	}
 
 	/**
@@ -358,19 +276,101 @@ public class Downloader {
 		}
 	}
 
-	private String[] mSongs;
+	/**
+	 * Download the list of songs to a specific directory
+	 * 
+	 * @param list
+	 */
+	public static void downLoad(List<Object> list) {
+		if (list != null && list.size() > 0) {
+			INSTANCE.mSongs = new String[list.size()];
+			for (int i = 0; i < list.size(); i++) {
+				INSTANCE.mSongs[i] = (String) list.get(i);
+			}
+			Thread thread = new Thread(new Runnable() {
+				public void run() {
+					try {
+						start();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			});
+			thread.start();
+		} else {
+			return;
+		}
+	}
 
-	private final ArrayList<String> mSongsNotFoundArray = new ArrayList<String>();
+	public static long getCurrentFileSize() {
+		return INSTANCE.currentFileSize;
+	}
 
-	private String dir;
+	public static int getDownloadSpeed() {
+		return INSTANCE.mDownloadSpeed;
+	}
 
-	private int mDownloadSpeed = 0;
+	public static int getFailedNumber() {
+		return INSTANCE.mSongsNotFoundArray.size();
+	}
 
-	private long currentFileSize = 0;
+	public static ArrayList<String> getFailedSongs() {
+		return INSTANCE.mSongsNotFoundArray;
+	}
 
-	private long totalDownloaded = 0;
+	/**
+	 * Get the static instance for callbacks
+	 * 
+	 * @return
+	 */
+	public static Downloader getInstance() {
+		return INSTANCE;
+	}
 
-	private Downloader() {
+	/**
+	 * Returns the progress of download
+	 * 
+	 * @return [0-100]
+	 */
+	public static int getProgress() {
+		if (INSTANCE.mSongs != null && INSTANCE.mSongs.length > 0) {
+			return progress * 100 / INSTANCE.mSongs.length;
+		} else {
+			return 0;
+		}
+	}
 
+	public static long getTotalSize() {
+		return INSTANCE.totalDownloaded;
+	}
+
+	public static boolean hasStarted() {
+		return sHasStarted;
+	}
+
+	public static void setDir(String dir) {
+		INSTANCE.dir = dir;
+	}
+
+	/**
+	 * Set listener for the downloader
+	 * 
+	 * @param listener
+	 */
+	public static void setListener(DownloaderListener listener) {
+		if (listener != null) {
+			mListener = listener;
+		}
+	}
+
+	/**
+	 * Stop the download process
+	 */
+	public static void stop() {
+		synchronized (INSTANCE) {
+			stop = true;
+			sHasStarted = false;
+			progress = 0;
+		}
 	}
 }

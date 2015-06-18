@@ -26,25 +26,33 @@ import javax.swing.filechooser.FileFilter;
 
 public class Gui implements DownloaderListener {
 
-	private class SongListRenderer extends DefaultListCellRenderer {
+	private JButton abortBtn;
+	private JLabel currDownloadTitleLbl;
+	private JLabel dlSpeedValue;
+	private JButton downloadBtn;
+	private JTextField downloadDirText;
+	private JFileChooser fileChooser;
+	private JLabel fileSizeValueLbl;
+	private JFrame frmSongdownloader;
+	private JLabel nbOfSongsText;
+	private JLabel notFoundNbText;
+	private int progress = 0;
+	private JProgressBar progressBar;
+	private File selectedFile;
+	private JList<String> songList;
+	private JTextField songListFilePathText;
+	private DefaultListModel<String> songs;
+	private JLabel songsDownloadedText;
+	private JLabel totalDownloadedValueLbl;
+	private JLabel totalSongsText;
 
-		private static final long serialVersionUID = -6027297447224041122L;
-
-		@Override
-		public Component getListCellRendererComponent(JList<?> list,
-				Object value, int index, boolean isSelected,
-				boolean cellHasFocus) {
-			super.getListCellRendererComponent(list, value, index, isSelected,
-					cellHasFocus);
-
-			if (Downloader.getFailedSongs().contains(value.toString())) {
-				setForeground(Color.red);
-			} else {
-				setForeground(Color.black);
-			}
-			return (this);
-		}
+	/**
+	 * Create the application.
+	 */
+	public Gui() {
+		initialize();
 	}
+
 	/**
 	 * Launch the application.
 	 */
@@ -59,70 +67,6 @@ public class Gui implements DownloaderListener {
 				}
 			}
 		});
-	}
-	private JFrame frmSongdownloader;
-	private JTextField songListFilePathText;
-	private JFileChooser fileChooser;
-	private JLabel nbOfSongsText;
-	private File selectedFile;
-	private DefaultListModel<String> songs;
-	private JButton downloadBtn;
-	private JList<String> songList;
-	private JLabel songsDownloadedText;
-	private JLabel totalSongsText;
-	private JTextField downloadDirText;
-	private JButton abortBtn;
-	private JProgressBar progressBar;
-	private JLabel notFoundNbText;
-	private JLabel dlSpeedValue;
-	private JLabel currDownloadTitleLbl;
-	private JLabel fileSizeValueLbl;
-
-	private JLabel totalDownloadedValueLbl;
-
-	private int progress = 0;
-
-	/**
-	 * Create the application.
-	 */
-	public Gui() {
-		initialize();
-	}
-
-	/**
-	 * callback from Downloader
-	 */
-	public void onFileDownloaded() {
-		progress++;
-		progressBar.setValue(Downloader.getProgress());
-		if (Downloader.getProgress() == 100) {
-			downloadBtn
-					.setText("<HTML><center>Click here to view files.<center></HTML>");
-			downloadBtn.setEnabled(true);
-			abortBtn.setEnabled(false);
-			onUpdateCurrentDownload("Download Done");
-		} else {
-			onUpdateCurrentDownload("");
-		}
-		songsDownloadedText.setText(String.valueOf(progress));
-		int failedNumber = Downloader.getFailedNumber();
-		notFoundNbText.setText(String.valueOf(failedNumber));
-		if (failedNumber > 0) {
-			notFoundNbText.setForeground(Color.red);
-		}
-		songList.updateUI();
-	}
-
-	public void onUpdateCurrentDownload(String title) {
-		currDownloadTitleLbl.setText("<html>" + title + "</html>");
-	}
-
-	public void onUpdateSpeed() {
-		dlSpeedValue.setText(String.valueOf(Downloader.getDownloadSpeed()));
-		fileSizeValueLbl
-				.setText(String.valueOf(Downloader.getCurrentFileSize() / 1024));
-		totalDownloadedValueLbl.setText(String.valueOf(Downloader
-				.getTotalSize() / 1048576));
 	}
 
 	/**
@@ -417,5 +361,61 @@ public class Gui implements DownloaderListener {
 			return songs.getSize();
 		}
 		return 0;
+	}
+
+	/**
+	 * callback from Downloader
+	 */
+	public void onFileDownloaded() {
+		progress++;
+		progressBar.setValue(Downloader.getProgress());
+		if (Downloader.getProgress() == 100) {
+			downloadBtn
+					.setText("<HTML><center>Click here to view files.<center></HTML>");
+			downloadBtn.setEnabled(true);
+			abortBtn.setEnabled(false);
+			onUpdateCurrentDownload("Download Done");
+		} else {
+			onUpdateCurrentDownload("");
+		}
+		songsDownloadedText.setText(String.valueOf(progress));
+		int failedNumber = Downloader.getFailedNumber();
+		notFoundNbText.setText(String.valueOf(failedNumber));
+		if (failedNumber > 0) {
+			notFoundNbText.setForeground(Color.red);
+		}
+		songList.updateUI();
+	}
+
+	public void onUpdateCurrentDownload(String title) {
+		currDownloadTitleLbl.setText("<html>" + title + "</html>");
+	}
+
+	public void onUpdateSpeed() {
+		dlSpeedValue.setText(String.valueOf(Downloader.getDownloadSpeed()));
+		fileSizeValueLbl
+				.setText(String.valueOf(Downloader.getCurrentFileSize() / 1024));
+		totalDownloadedValueLbl.setText(String.valueOf(Downloader
+				.getTotalSize() / 1048576));
+	}
+
+	private class SongListRenderer extends DefaultListCellRenderer {
+
+		private static final long serialVersionUID = -6027297447224041122L;
+
+		@Override
+		public Component getListCellRendererComponent(JList<?> list,
+				Object value, int index, boolean isSelected,
+				boolean cellHasFocus) {
+			super.getListCellRendererComponent(list, value, index, isSelected,
+					cellHasFocus);
+
+			if (Downloader.getFailedSongs().contains(value.toString())) {
+				setForeground(Color.red);
+			} else {
+				setForeground(Color.black);
+			}
+			return (this);
+		}
 	}
 }
