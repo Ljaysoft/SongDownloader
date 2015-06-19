@@ -17,7 +17,7 @@ public class Settings {
 	private Settings() {
 		// do not instanciate
 	}
-	
+
 	/**
 	 * Get Default input list directory
 	 * 

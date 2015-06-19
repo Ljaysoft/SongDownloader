@@ -47,14 +47,14 @@ public class Gui implements DownloaderListener {
 	private JMenu mnNewMenu_1;
 	private JMenu mnOption;
 	private final JMenuItem mntmAbout = new JMenuItem("About");
-	private JMenuItem resetPrefsMenuItem;
-	private JMenuItem reloadListMenuItem;
-	private JMenuItem openDirectoryMenuItem;
-	private JMenuItem openRecentLogMenuItem;
 	private JLabel nbOfSongsText;
 	private JLabel notFoundNbText;
+	private JMenuItem openDirectoryMenuItem;
+	private JMenuItem openRecentLogMenuItem;
 	private int progress = 0;
 	private JProgressBar progressBar;
+	private JMenuItem reloadListMenuItem;
+	private JMenuItem resetPrefsMenuItem;
 	private File selectedFile;
 	private JList<String> songList;
 	private JTextField songListFilePathText;
@@ -424,15 +424,38 @@ public class Gui implements DownloaderListener {
 		songList.updateUI();
 	}
 
-	private void openRecentLog() {
-
-	}
-
 	private void openOutputDir() {
 		try {
-			Runtime.getRuntime().exec("explorer " + Downloader.getOutputDir());
+			java.awt.Desktop.getDesktop().open(
+					new File(Downloader.getOutputDir()));
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private void openRecentLog() {
+		File dir = new File(Downloader.getOutputDir());
+		File[] logs = dir.listFiles(new java.io.FileFilter() {
+			public boolean accept(File pathname) {
+				String name = pathname.getName();
+				String extension = name.substring(name.lastIndexOf(".") + 1, name.length());
+				return pathname.isFile() && extension.equals("log");
+			}
+		});
+		long lastMod = Long.MIN_VALUE;
+		File theNewstLog = null;
+		for (File log : logs) {
+			if (log.lastModified() > lastMod) {
+				theNewstLog = log;
+				lastMod = log.lastModified();
+			}
+		}
+		if (theNewstLog != null) {
+			try {
+				java.awt.Desktop.getDesktop().open(theNewstLog);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

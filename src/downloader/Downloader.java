@@ -298,6 +298,12 @@ public class Downloader {
 		}
 	}
 
+	public static void clearFails() {
+		synchronized (INSTANCE) {
+			INSTANCE.mSongsNotFoundArray.clear();
+		}
+	}
+
 	/**
 	 * Download the list of songs to a specific directory
 	 * 
@@ -349,9 +355,10 @@ public class Downloader {
 	public static Downloader getInstance() {
 		return INSTANCE;
 	}
-	
+
 	/**
 	 * Get the output directory path
+	 * 
 	 * @return
 	 */
 	public static String getOutputDir() {
@@ -409,12 +416,6 @@ public class Downloader {
 			stop = true;
 			sHasStarted = false;
 			progress = 0;
-		}
-	}
-
-	public static void clearFails() {
-		synchronized (INSTANCE) {
-			INSTANCE.mSongsNotFoundArray.clear();
 		}
 	}
 }
