@@ -1,4 +1,4 @@
-package main;
+package downloader;
 
 import java.io.BufferedInputStream;
 import java.io.File;
