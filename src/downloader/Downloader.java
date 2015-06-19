@@ -37,10 +37,10 @@ public class Downloader {
 	private static Boolean stop = false;
 	private static String xsongsURL = "http://xsongs.pk/";
 	private long currentFileSize = 0;
-	private String outputDir = "";
 	private int mDownloadSpeed = 0;
 	private String[] mSongs;
 	private final ArrayList<String> mSongsNotFoundArray = new ArrayList<String>();
+	private String outputDir = "";
 	private long totalDownloaded = 0;
 
 	private Downloader() {
@@ -54,8 +54,7 @@ public class Downloader {
 	 * @param regex
 	 * @return
 	 */
-	private static String getDownloadPageUrlMp3Mars(Document doc,
-			String classStr, String regex) {
+	private static String getDownloadPageUrlMp3Mars(Document doc, String classStr, String regex) {
 		String url = null;
 		if (doc != null) {
 			Elements classes = doc.getElementsByClass(classStr);
@@ -350,11 +349,8 @@ public class Downloader {
 		return sHasStarted;
 	}
 
-	public static void setOutputDir(String outputDir) {
-		if (outputDir == null)
-			return;
-		Settings.setOutPutDir(outputDir);
-		INSTANCE.outputDir = outputDir;
+	public static boolean isReady() {
+		return !INSTANCE.outputDir.isEmpty();
 	}
 
 	/**
@@ -368,6 +364,13 @@ public class Downloader {
 		}
 	}
 
+	public static void setOutputDir(String outputDir) {
+		if (outputDir == null)
+			return;
+		Settings.setOutPutDir(outputDir);
+		INSTANCE.outputDir = outputDir;
+	}
+
 	/**
 	 * Stop the download process
 	 */
@@ -377,9 +380,5 @@ public class Downloader {
 			sHasStarted = false;
 			progress = 0;
 		}
-	}
-
-	public static boolean isReady() {
-		return !INSTANCE.outputDir.isEmpty();
 	}
 }

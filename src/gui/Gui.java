@@ -47,9 +47,9 @@ public class Gui implements DownloaderListener {
 	private JTextField songListFilePathText;
 	private DefaultListModel<String> songs;
 	private JLabel songsDownloadedText;
+	private JLabel songSizeUnitLbl;
 	private JLabel totalDownloadedValueLbl;
 	private JLabel totalSongsText;
-	private JLabel songSizeUnitLbl;
 
 	/**
 	 * Create the application.
