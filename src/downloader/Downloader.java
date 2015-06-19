@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
@@ -45,7 +44,7 @@ public class Downloader {
 	private int mDownloadSpeed = 0;
 	private String[] mSongs;
 	private final ArrayList<String> mSongsNotFoundArray = new ArrayList<String>();
-	private String outputDir = "";
+	private String outputDir = Settings.getOutPutDir();
 	private long totalDownloaded = 0;
 
 	private Downloader() {
@@ -59,7 +58,8 @@ public class Downloader {
 	 * @param regex
 	 * @return
 	 */
-	private static String getDownloadPageUrlMp3Mars(Document doc, String classStr, String regex) {
+	private static String getDownloadPageUrlMp3Mars(Document doc,
+			String classStr, String regex) {
 		String url = null;
 		if (doc != null) {
 			Elements classes = doc.getElementsByClass(classStr);
@@ -282,16 +282,18 @@ public class Downloader {
 		}
 		// write failed songs into logfile
 		try {
-			String timeLog = new SimpleDateFormat("yyyyMMdd_HHmmss").format(
-			        Calendar.getInstance().getTime());
-			File failedSongFile = new File(INSTANCE.outputDir + "\\" + "failed_song_" + timeLog + ".log");
-			BufferedWriter writer = new BufferedWriter(new FileWriter(failedSongFile));
-			for (String song: INSTANCE.mSongsNotFoundArray) {
+			String timeLog = new SimpleDateFormat("yyyyMMdd_HHmmss")
+					.format(Calendar.getInstance().getTime());
+			File failedSongFile = new File(INSTANCE.outputDir + "\\"
+					+ "failed_song_" + timeLog + ".log");
+			BufferedWriter writer = new BufferedWriter(new FileWriter(
+					failedSongFile));
+			for (String song : INSTANCE.mSongsNotFoundArray) {
 				writer.write(song);
 				writer.newLine();
 			}
 			writer.close();
-		} catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -301,8 +303,9 @@ public class Downloader {
 	 * 
 	 * @param list
 	 */
-	public static void downLoad(List<Object> list) {
+	public static void downLoadFromList(List<Object> list) {
 		if (list != null && list.size() > 0) {
+			INSTANCE.mSongsNotFoundArray.clear();
 			INSTANCE.mSongs = new String[list.size()];
 			for (int i = 0; i < list.size(); i++) {
 				INSTANCE.mSongs[i] = (String) list.get(i);
@@ -345,6 +348,14 @@ public class Downloader {
 	 */
 	public static Downloader getInstance() {
 		return INSTANCE;
+	}
+	
+	/**
+	 * Get the output directory path
+	 * @return
+	 */
+	public static String getOutputDir() {
+		return INSTANCE.outputDir;
 	}
 
 	/**
@@ -398,6 +409,12 @@ public class Downloader {
 			stop = true;
 			sHasStarted = false;
 			progress = 0;
+		}
+	}
+
+	public static void clearFails() {
+		synchronized (INSTANCE) {
+			INSTANCE.mSongsNotFoundArray.clear();
 		}
 	}
 }

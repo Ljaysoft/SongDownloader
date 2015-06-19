@@ -18,15 +18,18 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 
+import settings.Settings;
 import downloader.Downloader;
 import downloader.DownloaderListener;
-import settings.Settings;
 
 public class Gui implements DownloaderListener {
 
@@ -38,6 +41,16 @@ public class Gui implements DownloaderListener {
 	private JFileChooser fileChooser;
 	private JLabel fileSizeValueLbl;
 	private JFrame frmSongdownloader;
+	private final JMenuBar menuBar = new JMenuBar();
+	private final JMenu mnAbout = new JMenu("About");
+	private JMenu mnNewMenu;
+	private JMenu mnNewMenu_1;
+	private JMenu mnOption;
+	private final JMenuItem mntmAbout = new JMenuItem("About");
+	private JMenuItem resetPrefsMenuItem;
+	private JMenuItem reloadListMenuItem;
+	private JMenuItem openDirectoryMenuItem;
+	private JMenuItem openRecentLogMenuItem;
 	private JLabel nbOfSongsText;
 	private JLabel notFoundNbText;
 	private int progress = 0;
@@ -113,7 +126,6 @@ public class Gui implements DownloaderListener {
 	 * chooseSongListFile
 	 */
 	private void chooseSongListFile() {
-		progress = 0;
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		fileChooser.setFileFilter(new FileFilter() {
 
@@ -137,15 +149,7 @@ public class Gui implements DownloaderListener {
 			selectedFile = fileChooser.getSelectedFile();
 			Settings.setInPutDir(selectedFile.getParent());
 			songListFilePathText.setText(selectedFile.getAbsolutePath());
-			songsDownloadedText.setText(String.valueOf(progress));
-			nbOfSongsText.setText(String.valueOf(parseSongList()));
-			downloadBtn.setText("Download");
-			downloadBtn.setEnabled(Downloader.isReady() && !songs.isEmpty());
-			Downloader.stop();
-			progressBar.setValue(Downloader.getProgress());
-			notFoundNbText.setText("0");
-			notFoundNbText.setForeground(Color.black);
-			songList.updateUI();
+			loadList();
 		}
 	}
 
@@ -155,7 +159,7 @@ public class Gui implements DownloaderListener {
 	private void download() {
 		totalSongsText.setText(String.valueOf(songs.getSize()));
 		downloadBtn.setEnabled(false);
-		Downloader.downLoad(Arrays.asList(songs.toArray()));
+		Downloader.downLoadFromList(Arrays.asList(songs.toArray()));
 	}
 
 	/**
@@ -166,7 +170,7 @@ public class Gui implements DownloaderListener {
 
 		frmSongdownloader = new JFrame();
 		frmSongdownloader.setTitle("SongDownloader");
-		frmSongdownloader.setBounds(100, 100, 487, 522);
+		frmSongdownloader.setBounds(100, 100, 487, 541);
 		frmSongdownloader.setResizable(false);
 		frmSongdownloader.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmSongdownloader.getContentPane().setLayout(null);
@@ -216,12 +220,7 @@ public class Gui implements DownloaderListener {
 					downloadBtn.setText("Downloading...");
 					abortBtn.setEnabled(true);
 				} else {
-					try {
-						Runtime.getRuntime().exec(
-								"explorer " + downloadDirText.getText());
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					openOutputDir();
 				}
 			}
 		});
@@ -291,7 +290,7 @@ public class Gui implements DownloaderListener {
 		});
 		frmSongdownloader.getContentPane().add(abortBtn);
 
-		JLabel lblNotFound = new JLabel("Not found:");
+		JLabel lblNotFound = new JLabel("Not sound:");
 		lblNotFound.setBounds(346, 432, 67, 14);
 		frmSongdownloader.getContentPane().add(lblNotFound);
 
@@ -359,6 +358,82 @@ public class Gui implements DownloaderListener {
 		lblMbs.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblMbs.setBounds(436, 390, 35, 14);
 		frmSongdownloader.getContentPane().add(lblMbs);
+
+		frmSongdownloader.setJMenuBar(menuBar);
+
+		mnNewMenu = new JMenu("File");
+		mnNewMenu.setHorizontalAlignment(SwingConstants.LEFT);
+		menuBar.add(mnNewMenu);
+
+		mnNewMenu_1 = new JMenu("Log");
+		mnNewMenu.add(mnNewMenu_1);
+
+		openRecentLogMenuItem = new JMenuItem("Open Recent Log");
+		openRecentLogMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				openRecentLog();
+			}
+		});
+		mnNewMenu_1.add(openRecentLogMenuItem);
+
+		reloadListMenuItem = new JMenuItem("Reload List");
+		reloadListMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				nbOfSongsText.setText(String.valueOf(parseSongList()));
+				Downloader.stop();
+				Downloader.clearFails();
+				loadList();
+			}
+		});
+		mnNewMenu.add(reloadListMenuItem);
+
+		openDirectoryMenuItem = new JMenuItem("Open Directory");
+		openDirectoryMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				openOutputDir();
+			}
+		});
+		mnNewMenu.add(openDirectoryMenuItem);
+
+		mnOption = new JMenu("Option");
+		menuBar.add(mnOption);
+
+		resetPrefsMenuItem = new JMenuItem("Reset Preferences");
+		resetPrefsMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Settings.reset();
+			}
+		});
+		mnOption.add(resetPrefsMenuItem);
+
+		menuBar.add(mnAbout);
+
+		mnAbout.add(mntmAbout);
+	}
+
+	private void loadList() {
+		progress = 0;
+		songsDownloadedText.setText("0");
+		nbOfSongsText.setText(String.valueOf(parseSongList()));
+		downloadBtn.setText("Download");
+		downloadBtn.setEnabled(Downloader.isReady() && !songs.isEmpty());
+		Downloader.stop();
+		progressBar.setValue(Downloader.getProgress());
+		notFoundNbText.setText("0");
+		notFoundNbText.setForeground(Color.black);
+		songList.updateUI();
+	}
+
+	private void openRecentLog() {
+
+	}
+
+	private void openOutputDir() {
+		try {
+			Runtime.getRuntime().exec("explorer " + Downloader.getOutputDir());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -372,7 +447,9 @@ public class Gui implements DownloaderListener {
 				String myLine = null;
 				songs.clear();
 				while ((myLine = bufRead.readLine()) != null) {
-					songs.addElement(myLine);
+					if (!myLine.isEmpty()) {
+						songs.addElement(myLine);
+					}
 				}
 				bufRead.close();
 			} catch (IOException e) {
@@ -414,14 +491,20 @@ public class Gui implements DownloaderListener {
 	public void onUpdateSpeed() {
 		dlSpeedValue.setText(String.valueOf(Downloader.getDownloadSpeed()));
 		long currentSizeByte = Downloader.getCurrentFileSize();
-		if (currentSizeByte / 1024 > 1000) {
-			fileSizeValueLbl.setText(String.valueOf(currentSizeByte / 1048576)); // in mB																					// mB
+		if (currentSizeByte / 1024 > 1000) { // in mB
+			int remainder = (int) (currentSizeByte % 1048576 * 100 / 1048576);
+			fileSizeValueLbl
+					.setText(String.valueOf(currentSizeByte / 1048576)
+							+ "."
+							+ (remainder == 0 ? "00" : String
+									.valueOf(remainder)));
 			songSizeUnitLbl.setText("mB");
 		} else {
-			fileSizeValueLbl.setText(String.valueOf(Downloader.getCurrentFileSize() / 1024)); // in kB
+			fileSizeValueLbl.setText(String.valueOf(Downloader
+					.getCurrentFileSize() / 1024)); // in kB
 			songSizeUnitLbl.setText("kB");
 		}
-		
+
 		totalDownloadedValueLbl.setText(String.valueOf(Downloader
 				.getTotalSize() / 1048576));
 	}
