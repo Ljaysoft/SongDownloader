@@ -18,6 +18,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import settings.Settings;
+
 /**
  * Downloads songs from a list of song titles to the specified directory
  * 
@@ -35,7 +37,7 @@ public class Downloader {
 	private static Boolean stop = false;
 	private static String xsongsURL = "http://xsongs.pk/";
 	private long currentFileSize = 0;
-	private String dir;
+	private String outputDir = "";
 	private int mDownloadSpeed = 0;
 	private String[] mSongs;
 	private final ArrayList<String> mSongsNotFoundArray = new ArrayList<String>();
@@ -144,7 +146,7 @@ public class Downloader {
 
 			if (mListener != null) {
 				mListener.onUpdateCurrentDownload(filename.substring(
-						INSTANCE.dir.length() + 1, filename.length()));
+						INSTANCE.outputDir.length() + 1, filename.length()));
 			}
 
 			INSTANCE.currentFileSize = 0;
@@ -257,7 +259,7 @@ public class Downloader {
 							String downloadURL = getDownloadUrlMp3Mars(
 									downloadPageDoc, "script",
 									"((?:http|https)(?::\\/{2}[\\w]+)(?:[\\/|\\.]?)(?:[^\\s\"]*))");
-							if (saveUrl(INSTANCE.dir + "\\" + songTitle
+							if (saveUrl(INSTANCE.outputDir + "\\" + songTitle
 									+ mp3End, downloadURL)) {
 								isSongFound = true;
 							}
@@ -348,8 +350,11 @@ public class Downloader {
 		return sHasStarted;
 	}
 
-	public static void setDir(String dir) {
-		INSTANCE.dir = dir;
+	public static void setOutputDir(String outputDir) {
+		if (outputDir == null)
+			return;
+		Settings.setOutPutDir(outputDir);
+		INSTANCE.outputDir = outputDir;
 	}
 
 	/**
@@ -372,5 +377,9 @@ public class Downloader {
 			sHasStarted = false;
 			progress = 0;
 		}
+	}
+
+	public static boolean isReady() {
+		return !INSTANCE.outputDir.isEmpty();
 	}
 }
