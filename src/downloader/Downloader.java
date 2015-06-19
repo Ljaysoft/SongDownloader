@@ -1,14 +1,19 @@
 package downloader;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -274,6 +279,20 @@ public class Downloader {
 				progress++;
 				mListener.onFileDownloaded();
 			}
+		}
+		// write failed songs into logfile
+		try {
+			String timeLog = new SimpleDateFormat("yyyyMMdd_HHmmss").format(
+			        Calendar.getInstance().getTime());
+			File failedSongFile = new File(INSTANCE.outputDir + "\\" + "failed_song_" + timeLog + ".log");
+			BufferedWriter writer = new BufferedWriter(new FileWriter(failedSongFile));
+			for (String song: INSTANCE.mSongsNotFoundArray) {
+				writer.write(song);
+				writer.newLine();
+			}
+			writer.close();
+		} catch(Exception e) {
+			e.printStackTrace();
 		}
 	}
 
