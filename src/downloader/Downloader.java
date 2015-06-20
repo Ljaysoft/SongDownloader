@@ -8,21 +8,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import settings.Settings;
+import database.GetSongFromMP3Mars;
 
 /**
  * Downloads songs from a list of song titles to the specified directory
@@ -34,152 +27,21 @@ public class Downloader {
 
 	private static Downloader INSTANCE = new Downloader();
 	private static DownloaderListener mListener = null;
-	private static String mp3End = ".mp3";
-	private static String mp3marsURL = "http://www.mp3mars.com/mp3/";
+	private static String mp3goearURL = "http://http://mp3goear.com/"; // a
+																		// data-href=http://mp3goear.com/sc/file/
 	private static int progress = 0;
 	private static boolean sHasStarted;
 	private static Boolean stop = false;
-	private static String xsongsURL = "http://xsongs.pk/";
 	private long currentFileSize = 0;
 	private int mDownloadSpeed = 0;
 	private String[] mSongs;
 	private final ArrayList<String> mSongsNotFoundArray = new ArrayList<String>();
 	private String outputDir = Settings.getOutPutDir();
 	private long totalDownloaded = 0;
+	private int alreadyOwn = 0;
 
 	private Downloader() {
 
-	}
-
-	/**
-	 * 
-	 * @param doc
-	 * @param classStr
-	 * @param regex
-	 * @return
-	 */
-	private static String getDownloadPageUrlMp3Mars(Document doc,
-			String classStr, String regex) {
-		String url = null;
-		if (doc != null) {
-			Elements classes = doc.getElementsByClass(classStr);
-			if (classes != null && classes.size() > 1) {
-				Element downloadUrlElement = classes.get(1)
-						.getElementsByAttributeValueMatching("href", regex)
-						.first();
-				if (downloadUrlElement != null) {
-					url = downloadUrlElement.attr("href");
-				}
-			}
-		}
-		return url;
-	}
-
-	/**
-	 * Returns the url of the download page
-	 * 
-	 * @param body
-	 * @return
-	 */
-	private static String getDownloadPageUrlXSong(Document doc,
-			String classStr, String regex) {
-		String url = null;
-		if (doc != null) {
-			Element eClass = doc.getElementsByClass(classStr).first();
-			if (eClass != null) {
-				Element downloadUrlElement = eClass
-						.getElementsByAttributeValueMatching("href", regex)
-						.first();
-				if (downloadUrlElement != null) {
-					url = downloadUrlElement.attr("href");
-				}
-			}
-		}
-		return url;
-	}
-
-	/**
-	 * 
-	 * @param doc
-	 * @param tag
-	 * @param regex
-	 * @return
-	 */
-	private static String getDownloadUrlMp3Mars(Document doc, String tag,
-			String regex) {
-		String url = null;
-		if (doc != null) {
-			Element div = doc.select(tag).first();
-			if (div != null) {
-				String tagBlock = div.toString();
-				Pattern pattern = Pattern.compile(regex);
-				Matcher matcher = pattern.matcher(tagBlock);
-				if (matcher.find()) {
-					url = matcher.group(1);
-				}
-			}
-		}
-		return url;
-	}
-
-	/**
-	 * Saves mp3 of the name filename that comes from urlString
-	 * 
-	 * @param filename
-	 * @param urlString
-	 * @throws MalformedURLException
-	 * @throws IOException
-	 */
-	private static Boolean saveUrl(final String filename, final String urlString)
-			throws MalformedURLException, IOException {
-		File f = new File(filename);
-		if (f.exists() && !f.isDirectory())
-			return false;
-		BufferedInputStream in = null;
-		FileOutputStream fout = null;
-		try {
-			URL url = new URL(urlString);
-			HttpURLConnection httpcon = (HttpURLConnection) url
-					.openConnection();
-			httpcon.addRequestProperty("User-Agent", "Mozilla/4.76");
-			in = new BufferedInputStream(httpcon.getInputStream());
-			fout = new FileOutputStream(filename);
-			final byte data[] = new byte[4096];
-			int count;
-			long estimatedTime;
-
-			if (mListener != null) {
-				mListener.onUpdateCurrentDownload(filename.substring(
-						INSTANCE.outputDir.length() + 1, filename.length()));
-			}
-
-			INSTANCE.currentFileSize = 0;
-
-			long startTime = System.nanoTime();
-
-			while ((count = in.read(data, 0, 4096)) != -1 && !stop) {
-				fout.write(data, 0, count);
-				synchronized (INSTANCE) {
-					INSTANCE.currentFileSize += count;
-					INSTANCE.totalDownloaded += count;
-					estimatedTime = System.nanoTime() - startTime;
-					INSTANCE.mDownloadSpeed = (int) (INSTANCE.currentFileSize
-							* 1000000000 / estimatedTime / 1024);
-					if (mListener != null) {
-						mListener.onUpdateSpeed();
-					}
-				}
-			}
-		} finally {
-			if (in != null) {
-				in.close();
-			}
-			if (fout != null) {
-				fout.close();
-			}
-		}
-
-		return true;
 	}
 
 	/**
@@ -193,7 +55,7 @@ public class Downloader {
 		INSTANCE.mSongsNotFoundArray.clear();
 		INSTANCE.totalDownloaded = 0;
 		String songTitle;
-		Boolean isSongFound;
+		Boolean isSongFound = false;
 		synchronized (INSTANCE) {
 			sHasStarted = true;
 		}
@@ -207,70 +69,14 @@ public class Downloader {
 			}
 			songTitle = INSTANCE.mSongs[i];
 
-			// search in xsongs
-			String songURL = songTitle.replaceAll("[\\&()]", "")
-					.replaceAll("-", "").replaceAll("\\s+", " ")
-					.replaceAll("\\s", "-").toLowerCase();
-			Document searchPageDoc = null;
-			try {
-				searchPageDoc = Jsoup.parse(new URL(xsongsURL + songURL
-						+ ".html"), 10000);
-			} catch (SocketTimeoutException e) {
-				e.printStackTrace();
-			}
-			if (searchPageDoc != null) {
-				String downloadPageURL = getDownloadPageUrlXSong(searchPageDoc,
-						"rack", "(http:\\/\\/xsongs\\.pk\\/download-song\\/)");
-				if (downloadPageURL != null) {
-					/*
-					 * if (saveUrl(INSTANCE.dir + "\\" + songTitle + mp3End,
-					 * downloadPageURL.replace("download-song", "downloads") +
-					 * mp3End)) { isSongFound = true; }
-					 */
-				}
-			}
 			// search in mp3mars
-			if (!isSongFound) {
-				songURL = songTitle.replaceAll("[\\&()-]", "")
-						.replaceAll("\\s+", " ").replaceAll("\\s", "+");
-				searchPageDoc = null;
-				try {
-					// handle status 403
-					searchPageDoc = Jsoup
-							.connect(mp3marsURL + songURL)
-							.userAgent(
-									"mozilla/5.0 (macintosh; intel mac os x 10_9_2) applewebkit/537.36 (khtml, like gecko) chrome/33.0.1750.152 safari/537.36")
-							.get();
-				} catch (SocketTimeoutException e) {
-					e.printStackTrace();
-				}
-				if (searchPageDoc != null) {
-					String downloadPageURL = getDownloadPageUrlMp3Mars(
-							searchPageDoc, "dl", "(http:\\/\\/refs\\.pm\\/)");
-					if (downloadPageURL != null) {
-						Document downloadPageDoc = null;
-						try {
-							// handle status 403 again
-							downloadPageDoc = Jsoup
-									.connect(downloadPageURL)
-									.userAgent(
-											"mozilla/5.0 (macintosh; intel mac os x 10_9_2) applewebkit/537.36 (khtml, like gecko) chrome/33.0.1750.152 safari/537.36")
-									.get();
-						} catch (SocketTimeoutException e) {
-							e.printStackTrace();
-						}
-						if (downloadPageDoc != null) {
-							String downloadURL = getDownloadUrlMp3Mars(
-									downloadPageDoc, "script",
-									"((?:http|https)(?::\\/{2}[\\w]+)(?:[\\/|\\.]?)(?:[^\\s\"]*))");
-							if (saveUrl(INSTANCE.outputDir + "\\" + songTitle
-									+ mp3End, downloadURL)) {
-								isSongFound = true;
-							}
-						}
-					}
-				}
-			}
+			isSongFound = new GetSongFromMP3Mars().search(songTitle);
+
+			// search in xsongs broken, don't execute
+			// if (!isSongFound) {
+			// isSongFound = new GetSongFromXSongs().search(songTitle);
+			// }
+
 			// not found, add to the list
 			if (!isSongFound) {
 				INSTANCE.mSongsNotFoundArray.add(songTitle);
@@ -281,20 +87,22 @@ public class Downloader {
 			}
 		}
 		// write failed songs into logfile
-		try {
-			String timeLog = new SimpleDateFormat("yyyyMMdd_HHmmss")
-					.format(Calendar.getInstance().getTime());
-			File failedSongFile = new File(INSTANCE.outputDir + "\\"
-					+ "failed_song_" + timeLog + ".log");
-			BufferedWriter writer = new BufferedWriter(new FileWriter(
-					failedSongFile));
-			for (String song : INSTANCE.mSongsNotFoundArray) {
-				writer.write(song);
-				writer.newLine();
+		if (!INSTANCE.mSongsNotFoundArray.isEmpty()) {
+			try {
+				String timeLog = new SimpleDateFormat("yyyyMMdd_HHmmss")
+						.format(Calendar.getInstance().getTime());
+				File failedSongFile = new File(INSTANCE.outputDir + "\\"
+						+ "failed_song_" + timeLog + ".log");
+				BufferedWriter writer = new BufferedWriter(new FileWriter(
+						failedSongFile));
+				for (String song : INSTANCE.mSongsNotFoundArray) {
+					writer.write(song);
+					writer.newLine();
+				}
+				writer.close();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			writer.close();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -329,6 +137,10 @@ public class Downloader {
 		} else {
 			return;
 		}
+	}
+	
+	public static int getNumberOwned() {
+		return INSTANCE.alreadyOwn;
 	}
 
 	public static long getCurrentFileSize() {
@@ -391,6 +203,68 @@ public class Downloader {
 	}
 
 	/**
+	 * Saves mp3 of the name filename that comes from urlString
+	 * 
+	 * @param filename
+	 * @param urlString
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 */
+	public static Boolean saveUrl(final String filename, final String urlString)
+			throws MalformedURLException, IOException {
+		String fullName = INSTANCE.outputDir + "\\" + filename + ".mp3";
+		File f = new File(fullName);
+		if (f.exists() && f.isFile()) {
+			INSTANCE.alreadyOwn++;
+			return true;
+		}
+		BufferedInputStream in = null;
+		FileOutputStream fout = null;
+		try {
+			URL url = new URL(urlString);
+			HttpURLConnection httpcon = (HttpURLConnection) url
+					.openConnection();
+			httpcon.addRequestProperty("User-Agent", "Mozilla/4.76");
+			in = new BufferedInputStream(httpcon.getInputStream());
+			fout = new FileOutputStream(fullName);
+			final byte data[] = new byte[4096];
+			int count;
+			long estimatedTime;
+
+			if (mListener != null) {
+				mListener.onUpdateCurrentDownload(filename);
+			}
+
+			INSTANCE.currentFileSize = 0;
+
+			long startTime = System.nanoTime();
+
+			while ((count = in.read(data, 0, 4096)) != -1 && !stop) {
+				fout.write(data, 0, count);
+				synchronized (INSTANCE) {
+					INSTANCE.currentFileSize += count;
+					INSTANCE.totalDownloaded += count;
+					estimatedTime = System.nanoTime() - startTime;
+					INSTANCE.mDownloadSpeed = (int) (INSTANCE.currentFileSize
+							* 1000000000 / estimatedTime / 1024);
+					if (mListener != null) {
+						mListener.onUpdateSpeed();
+					}
+				}
+			}
+		} finally {
+			if (in != null) {
+				in.close();
+			}
+			if (fout != null) {
+				fout.close();
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Set listener for the downloader
 	 * 
 	 * @param listener
@@ -416,6 +290,10 @@ public class Downloader {
 			stop = true;
 			sHasStarted = false;
 			progress = 0;
+			INSTANCE.mDownloadSpeed = 0;
+			INSTANCE.totalDownloaded = 0;
+			INSTANCE.currentFileSize = 0;
+			INSTANCE.alreadyOwn = 0;
 		}
 	}
 }

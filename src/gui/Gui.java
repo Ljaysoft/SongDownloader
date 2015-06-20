@@ -47,6 +47,7 @@ public class Gui implements DownloaderListener {
 	private JMenu mnNewMenu_1;
 	private JMenu mnOption;
 	private final JMenuItem mntmAbout = new JMenuItem("About");
+	private final JMenuItem mntmLoadLastLog = new JMenuItem("Load Last Log");
 	private JLabel nbOfSongsText;
 	private JLabel notFoundNbText;
 	private JMenuItem openDirectoryMenuItem;
@@ -63,6 +64,8 @@ public class Gui implements DownloaderListener {
 	private JLabel songSizeUnitLbl;
 	private JLabel totalDownloadedValueLbl;
 	private JLabel totalSongsText;
+	private JLabel lblAlreadyOwn;
+	private JLabel nbAlreadyOwnedValueLbl;
 
 	/**
 	 * Create the application.
@@ -85,6 +88,10 @@ public class Gui implements DownloaderListener {
 				}
 			}
 		});
+	}
+
+	protected void loadLastLog() {
+		// TODO loadlastlog
 	}
 
 	/**
@@ -149,6 +156,9 @@ public class Gui implements DownloaderListener {
 			selectedFile = fileChooser.getSelectedFile();
 			Settings.setInPutDir(selectedFile.getParent());
 			songListFilePathText.setText(selectedFile.getAbsolutePath());
+			nbOfSongsText.setText(String.valueOf(parseSongList()));
+			Downloader.stop();
+			Downloader.clearFails();
 			loadList();
 		}
 	}
@@ -290,7 +300,7 @@ public class Gui implements DownloaderListener {
 		});
 		frmSongdownloader.getContentPane().add(abortBtn);
 
-		JLabel lblNotFound = new JLabel("Not sound:");
+		JLabel lblNotFound = new JLabel("Not found:");
 		lblNotFound.setBounds(346, 432, 67, 14);
 		frmSongdownloader.getContentPane().add(lblNotFound);
 
@@ -300,18 +310,18 @@ public class Gui implements DownloaderListener {
 		notFoundNbText.setForeground(Color.black);
 		frmSongdownloader.getContentPane().add(notFoundNbText);
 
-		JLabel lblDownloadSpeed = new JLabel("Download speed:");
+		JLabel lblDownloadSpeed = new JLabel("Down speed:");
 		lblDownloadSpeed.setHorizontalAlignment(SwingConstants.LEFT);
-		lblDownloadSpeed.setBounds(165, 411, 107, 14);
+		lblDownloadSpeed.setBounds(165, 411, 100, 14);
 		frmSongdownloader.getContentPane().add(lblDownloadSpeed);
 
 		dlSpeedValue = new JLabel("0");
 		dlSpeedValue.setHorizontalAlignment(SwingConstants.RIGHT);
-		dlSpeedValue.setBounds(261, 411, 55, 14);
+		dlSpeedValue.setBounds(254, 411, 45, 14);
 		frmSongdownloader.getContentPane().add(dlSpeedValue);
 
 		JLabel lblKbs = new JLabel("kBps");
-		lblKbs.setBounds(317, 411, 46, 14);
+		lblKbs.setBounds(307, 411, 46, 14);
 		frmSongdownloader.getContentPane().add(lblKbs);
 
 		JLabel lblDownloading = new JLabel("Downloading:");
@@ -329,11 +339,11 @@ public class Gui implements DownloaderListener {
 
 		fileSizeValueLbl = new JLabel("0");
 		fileSizeValueLbl.setHorizontalAlignment(SwingConstants.RIGHT);
-		fileSizeValueLbl.setBounds(270, 390, 46, 14);
+		fileSizeValueLbl.setBounds(254, 390, 46, 14);
 		frmSongdownloader.getContentPane().add(fileSizeValueLbl);
 
 		songSizeUnitLbl = new JLabel("kB");
-		songSizeUnitLbl.setBounds(318, 390, 46, 14);
+		songSizeUnitLbl.setBounds(307, 390, 46, 14);
 		frmSongdownloader.getContentPane().add(songSizeUnitLbl);
 
 		JButton btnChooseDir = new JButton("Directory");
@@ -359,6 +369,15 @@ public class Gui implements DownloaderListener {
 		lblMbs.setBounds(436, 390, 35, 14);
 		frmSongdownloader.getContentPane().add(lblMbs);
 
+		lblAlreadyOwn = new JLabel("Already own:");
+		lblAlreadyOwn.setBounds(346, 411, 86, 14);
+		frmSongdownloader.getContentPane().add(lblAlreadyOwn);
+
+		nbAlreadyOwnedValueLbl = new JLabel("0");
+		nbAlreadyOwnedValueLbl.setHorizontalAlignment(SwingConstants.RIGHT);
+		nbAlreadyOwnedValueLbl.setBounds(425, 411, 46, 14);
+		frmSongdownloader.getContentPane().add(nbAlreadyOwnedValueLbl);
+
 		frmSongdownloader.setJMenuBar(menuBar);
 
 		mnNewMenu = new JMenu("File");
@@ -368,13 +387,21 @@ public class Gui implements DownloaderListener {
 		mnNewMenu_1 = new JMenu("Log");
 		mnNewMenu.add(mnNewMenu_1);
 
-		openRecentLogMenuItem = new JMenuItem("Open Recent Log");
+		openRecentLogMenuItem = new JMenuItem("View Last Log");
 		openRecentLogMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				openRecentLog();
+				viewLastLog();
 			}
 		});
 		mnNewMenu_1.add(openRecentLogMenuItem);
+
+		mntmLoadLastLog.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				loadLastLog();
+			}
+		});
+		mnNewMenu_1.add(mntmLoadLastLog);
 
 		reloadListMenuItem = new JMenuItem("Reload List");
 		reloadListMenuItem.addActionListener(new ActionListener() {
@@ -419,8 +446,13 @@ public class Gui implements DownloaderListener {
 		downloadBtn.setEnabled(Downloader.isReady() && !songs.isEmpty());
 		Downloader.stop();
 		progressBar.setValue(Downloader.getProgress());
+		nbAlreadyOwnedValueLbl.setText(String.valueOf(Downloader
+				.getNumberOwned()));
+		nbAlreadyOwnedValueLbl.setForeground(Color.black);
 		notFoundNbText.setText("0");
 		notFoundNbText.setForeground(Color.black);
+		onUpdateSpeed();
+		onUpdateCurrentDownload("");
 		songList.updateUI();
 	}
 
@@ -430,32 +462,6 @@ public class Gui implements DownloaderListener {
 					new File(Downloader.getOutputDir()));
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-	}
-
-	private void openRecentLog() {
-		File dir = new File(Downloader.getOutputDir());
-		File[] logs = dir.listFiles(new java.io.FileFilter() {
-			public boolean accept(File pathname) {
-				String name = pathname.getName();
-				String extension = name.substring(name.lastIndexOf(".") + 1, name.length());
-				return pathname.isFile() && extension.equals("log");
-			}
-		});
-		long lastMod = Long.MIN_VALUE;
-		File theNewstLog = null;
-		for (File log : logs) {
-			if (log.lastModified() > lastMod) {
-				theNewstLog = log;
-				lastMod = log.lastModified();
-			}
-		}
-		if (theNewstLog != null) {
-			try {
-				java.awt.Desktop.getDesktop().open(theNewstLog);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 
@@ -483,6 +489,33 @@ public class Gui implements DownloaderListener {
 		return 0;
 	}
 
+	private void viewLastLog() {
+		File dir = new File(Downloader.getOutputDir());
+		File[] logs = dir.listFiles(new java.io.FileFilter() {
+			public boolean accept(File pathname) {
+				String name = pathname.getName();
+				String extension = name.substring(name.lastIndexOf(".") + 1,
+						name.length());
+				return pathname.isFile() && extension.equals("log");
+			}
+		});
+		long lastMod = Long.MIN_VALUE;
+		File theNewstLog = null;
+		for (File log : logs) {
+			if (log.lastModified() > lastMod) {
+				theNewstLog = log;
+				lastMod = log.lastModified();
+			}
+		}
+		if (theNewstLog != null) {
+			try {
+				java.awt.Desktop.getDesktop().open(theNewstLog);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	/**
 	 * callback from Downloader
 	 */
@@ -504,6 +537,11 @@ public class Gui implements DownloaderListener {
 		if (failedNumber > 0) {
 			notFoundNbText.setForeground(Color.red);
 		}
+		int alreadyOwn = Downloader.getNumberOwned();
+		if (alreadyOwn > 0) {
+			nbAlreadyOwnedValueLbl.setForeground(Color.green);
+		}
+		nbAlreadyOwnedValueLbl.setText(String.valueOf(alreadyOwn));
 		songList.updateUI();
 	}
 
