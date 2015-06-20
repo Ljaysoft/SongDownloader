@@ -180,7 +180,7 @@ public class Gui implements DownloaderListener {
 
 		frmSongdownloader = new JFrame();
 		frmSongdownloader.setTitle("SongDownloader");
-		frmSongdownloader.setBounds(100, 100, 487, 541);
+		frmSongdownloader.setBounds(100, 100, 487, 563);
 		frmSongdownloader.setResizable(false);
 		frmSongdownloader.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmSongdownloader.getContentPane().setLayout(null);
@@ -235,30 +235,30 @@ public class Gui implements DownloaderListener {
 			}
 		});
 		downloadBtn.setEnabled(false);
-		downloadBtn.setBounds(10, 390, 145, 56);
+		downloadBtn.setBounds(10, 410, 145, 56);
 		frmSongdownloader.getContentPane().add(downloadBtn);
 
 		progressBar = new JProgressBar();
-		progressBar.setBounds(165, 457, 306, 26);
+		progressBar.setBounds(165, 477, 306, 26);
 		frmSongdownloader.getContentPane().add(progressBar);
 
 		JLabel lblProgress = new JLabel("Progress:");
-		lblProgress.setBounds(165, 432, 77, 14);
+		lblProgress.setBounds(165, 452, 77, 14);
 		frmSongdownloader.getContentPane().add(lblProgress);
 
 		songsDownloadedText = new JLabel("0");
 		songsDownloadedText.setHorizontalAlignment(SwingConstants.RIGHT);
-		songsDownloadedText.setBounds(226, 432, 54, 14);
+		songsDownloadedText.setBounds(226, 452, 54, 14);
 		frmSongdownloader.getContentPane().add(songsDownloadedText);
 
 		JLabel slashLabel = new JLabel("/");
 		slashLabel.setHorizontalAlignment(SwingConstants.LEFT);
-		slashLabel.setBounds(282, 432, 15, 14);
+		slashLabel.setBounds(282, 452, 15, 14);
 		frmSongdownloader.getContentPane().add(slashLabel);
 
 		totalSongsText = new JLabel("0");
 		totalSongsText.setHorizontalAlignment(SwingConstants.LEFT);
-		totalSongsText.setBounds(290, 432, 46, 14);
+		totalSongsText.setBounds(290, 452, 46, 14);
 		frmSongdownloader.getContentPane().add(totalSongsText);
 
 		songs = new DefaultListModel<String>();
@@ -289,7 +289,7 @@ public class Gui implements DownloaderListener {
 		frmSongdownloader.getContentPane().add(downloadDirText);
 
 		abortBtn = new JButton("Stop");
-		abortBtn.setBounds(10, 457, 145, 26);
+		abortBtn.setBounds(10, 477, 145, 26);
 		abortBtn.setEnabled(false);
 		abortBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -301,27 +301,27 @@ public class Gui implements DownloaderListener {
 		frmSongdownloader.getContentPane().add(abortBtn);
 
 		JLabel lblNotFound = new JLabel("Not found:");
-		lblNotFound.setBounds(346, 432, 67, 14);
+		lblNotFound.setBounds(346, 452, 67, 14);
 		frmSongdownloader.getContentPane().add(lblNotFound);
 
 		notFoundNbText = new JLabel("0");
 		notFoundNbText.setHorizontalAlignment(SwingConstants.RIGHT);
-		notFoundNbText.setBounds(414, 432, 57, 14);
+		notFoundNbText.setBounds(414, 452, 57, 14);
 		notFoundNbText.setForeground(Color.black);
 		frmSongdownloader.getContentPane().add(notFoundNbText);
 
 		JLabel lblDownloadSpeed = new JLabel("Down speed:");
 		lblDownloadSpeed.setHorizontalAlignment(SwingConstants.LEFT);
-		lblDownloadSpeed.setBounds(165, 411, 100, 14);
+		lblDownloadSpeed.setBounds(165, 431, 100, 14);
 		frmSongdownloader.getContentPane().add(lblDownloadSpeed);
 
 		dlSpeedValue = new JLabel("0");
 		dlSpeedValue.setHorizontalAlignment(SwingConstants.RIGHT);
-		dlSpeedValue.setBounds(254, 411, 45, 14);
+		dlSpeedValue.setBounds(254, 431, 45, 14);
 		frmSongdownloader.getContentPane().add(dlSpeedValue);
 
 		JLabel lblKbs = new JLabel("kBps");
-		lblKbs.setBounds(307, 411, 46, 14);
+		lblKbs.setBounds(307, 431, 46, 14);
 		frmSongdownloader.getContentPane().add(lblKbs);
 
 		JLabel lblDownloading = new JLabel("Downloading:");
@@ -330,20 +330,20 @@ public class Gui implements DownloaderListener {
 
 		currDownloadTitleLbl = new JLabel("");
 		currDownloadTitleLbl.setHorizontalAlignment(SwingConstants.LEFT);
-		currDownloadTitleLbl.setBounds(88, 364, 383, 22);
+		currDownloadTitleLbl.setBounds(88, 364, 383, 35);
 		frmSongdownloader.getContentPane().add(currDownloadTitleLbl);
 
 		JLabel lblFileSizeLbl = new JLabel("Song size:");
-		lblFileSizeLbl.setBounds(165, 390, 67, 14);
+		lblFileSizeLbl.setBounds(165, 410, 67, 14);
 		frmSongdownloader.getContentPane().add(lblFileSizeLbl);
 
 		fileSizeValueLbl = new JLabel("0");
 		fileSizeValueLbl.setHorizontalAlignment(SwingConstants.RIGHT);
-		fileSizeValueLbl.setBounds(254, 390, 46, 14);
+		fileSizeValueLbl.setBounds(254, 410, 46, 14);
 		frmSongdownloader.getContentPane().add(fileSizeValueLbl);
 
 		songSizeUnitLbl = new JLabel("kB");
-		songSizeUnitLbl.setBounds(307, 390, 46, 14);
+		songSizeUnitLbl.setBounds(307, 410, 46, 14);
 		frmSongdownloader.getContentPane().add(songSizeUnitLbl);
 
 		JButton btnChooseDir = new JButton("Directory");
@@ -356,26 +356,26 @@ public class Gui implements DownloaderListener {
 		frmSongdownloader.getContentPane().add(btnChooseDir);
 
 		JLabel lblTotal = new JLabel("Total:");
-		lblTotal.setBounds(346, 390, 35, 14);
+		lblTotal.setBounds(346, 410, 35, 14);
 		frmSongdownloader.getContentPane().add(lblTotal);
 
 		totalDownloadedValueLbl = new JLabel("0");
 		totalDownloadedValueLbl.setHorizontalAlignment(SwingConstants.RIGHT);
-		totalDownloadedValueLbl.setBounds(391, 390, 46, 14);
+		totalDownloadedValueLbl.setBounds(391, 410, 46, 14);
 		frmSongdownloader.getContentPane().add(totalDownloadedValueLbl);
 
 		JLabel lblMbs = new JLabel("MBps");
 		lblMbs.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblMbs.setBounds(436, 390, 35, 14);
+		lblMbs.setBounds(436, 410, 35, 14);
 		frmSongdownloader.getContentPane().add(lblMbs);
 
 		lblAlreadyOwn = new JLabel("Already own:");
-		lblAlreadyOwn.setBounds(346, 411, 86, 14);
+		lblAlreadyOwn.setBounds(346, 431, 86, 14);
 		frmSongdownloader.getContentPane().add(lblAlreadyOwn);
 
 		nbAlreadyOwnedValueLbl = new JLabel("0");
 		nbAlreadyOwnedValueLbl.setHorizontalAlignment(SwingConstants.RIGHT);
-		nbAlreadyOwnedValueLbl.setBounds(425, 411, 46, 14);
+		nbAlreadyOwnedValueLbl.setBounds(425, 431, 46, 14);
 		frmSongdownloader.getContentPane().add(nbAlreadyOwnedValueLbl);
 
 		frmSongdownloader.setJMenuBar(menuBar);
