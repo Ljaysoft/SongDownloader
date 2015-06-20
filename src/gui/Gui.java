@@ -546,7 +546,8 @@ public class Gui implements DownloaderListener {
 	}
 
 	public void onUpdateCurrentDownload(String title) {
-		currDownloadTitleLbl.setText("<html>" + title + "</html>");
+		currDownloadTitleLbl.setText("<html><div align=\"left\">" + title
+				+ "</div></html>");
 	}
 
 	public void onUpdateSpeed() {
