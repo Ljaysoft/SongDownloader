@@ -361,10 +361,10 @@ public class Gui implements DownloaderListener {
 
 		totalDownloadedValueLbl = new JLabel("0");
 		totalDownloadedValueLbl.setHorizontalAlignment(SwingConstants.RIGHT);
-		totalDownloadedValueLbl.setBounds(391, 410, 46, 14);
+		totalDownloadedValueLbl.setBounds(391, 410, 57, 14);
 		frmSongdownloader.getContentPane().add(totalDownloadedValueLbl);
 
-		JLabel lblMbs = new JLabel("MBps");
+		JLabel lblMbs = new JLabel("MB");
 		lblMbs.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblMbs.setBounds(436, 410, 35, 14);
 		frmSongdownloader.getContentPane().add(lblMbs);
