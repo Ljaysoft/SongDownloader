@@ -15,7 +15,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import settings.Settings;
-import database.GetSongFromMP3Mars;
+import database.*;
 
 /**
  * Downloads songs from a list of song titles to the specified directory
@@ -68,14 +68,18 @@ public class Downloader {
 				}
 			}
 			songTitle = INSTANCE.mSongs[i];
-
+			
 			// search in mp3mars
 			isSongFound = new GetSongFromMP3Mars().search(songTitle);
+			
+			// search in MP3goer broken
+			// if (!isSongFound) {
+			//isSongFound = new GetSongFromMP3goear().search(songTitle);
 
-			// search in xsongs broken, don't execute
+			// search in xsongs broken
 			// if (!isSongFound) {
 			// isSongFound = new GetSongFromXSongs().search(songTitle);
-			// }
+			// }			
 
 			// not found, add to the list
 			if (!isSongFound) {

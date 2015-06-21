@@ -74,7 +74,7 @@ public class GetSongFromMP3Mars extends SongEngine {
 			searchPageDoc = Jsoup
 					.connect(searchURL + songURL)
 					.userAgent(
-							"mozilla/5.0 (macintosh; intel mac os x 10_9_2) applewebkit/537.36 (khtml, like gecko) chrome/33.0.1750.152 safari/537.36")
+							"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0")
 					.get();
 		} catch (SocketTimeoutException e) {
 			e.printStackTrace();
@@ -92,7 +92,7 @@ public class GetSongFromMP3Mars extends SongEngine {
 					downloadPageDoc = Jsoup
 							.connect(downloadPageURL)
 							.userAgent(
-									"mozilla/5.0 (macintosh; intel mac os x 10_9_2) applewebkit/537.36 (khtml, like gecko) chrome/33.0.1750.152 safari/537.36")
+									"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0")
 							.get();
 				} catch (SocketTimeoutException e) {
 					e.printStackTrace();
