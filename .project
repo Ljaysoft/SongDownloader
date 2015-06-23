@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>src/gui/icon.png</name>
+			<type>1</type>
+			<locationURI>PROJECT_LOC/assets/icon.png</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

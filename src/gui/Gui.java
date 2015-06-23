@@ -3,6 +3,7 @@ package gui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -183,6 +184,7 @@ public class Gui implements DownloaderListener {
 		frmSongdownloader.setBounds(100, 100, 487, 563);
 		frmSongdownloader.setResizable(false);
 		frmSongdownloader.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmSongdownloader.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("icon.png")));
 		frmSongdownloader.getContentPane().setLayout(null);
 
 		fileChooser = new JFileChooser();

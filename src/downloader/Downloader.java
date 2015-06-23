@@ -27,8 +27,6 @@ public class Downloader {
 
 	private static Downloader INSTANCE = new Downloader();
 	private static DownloaderListener mListener = null;
-	private static String mp3goearURL = "http://http://mp3goear.com/"; // a
-																		// data-href=http://mp3goear.com/sc/file/
 	private static int progress = 0;
 	private static boolean sHasStarted;
 	private static Boolean stop = false;
