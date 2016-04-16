@@ -27,13 +27,18 @@ public class GetSongFromSourceOne extends SongEngine {
 		String url = null;
 		if (doc != null) {
 			Elements classes = doc.getElementsByClass(classStr);
+			//Elements classes2 = doc.getElementsByClass("item");
 			if (classes != null && classes.size() > 1) {
-				Element downloadUrlElement = classes.get(1)
-						.getElementsByAttributeValueMatching("onclick", regex)
-						.first();
-				if (downloadUrlElement != null) {
-					url = downloadUrlElement.attr("onclick");
-				}
+				Element downloadUrlElement = null;
+				for (int i = 0;i<classes.size();i++){
+					downloadUrlElement = classes.get(i)
+							.getElementsByAttributeValueMatching("href", regex)
+							.first();
+					if (downloadUrlElement != null) {
+						url = downloadUrlElement.attr("href");
+						break;
+					}
+				}				
 			}
 		}
 		return url;
@@ -65,7 +70,7 @@ public class GetSongFromSourceOne extends SongEngine {
 
 	public boolean search(String songTitle) {
 		Boolean isSongFound = false;
-		searchURL = "http://www.myfreemp3.space/mp3/";
+		searchURL = "http://mp3zzz.net/mp3/";
 		String songURL = songTitle.replaceAll("[\\&()-]", "")
 				.replaceAll("\\s+", " ").replaceAll("\\s", "+");
 		Document searchPageDoc = null;
@@ -84,9 +89,9 @@ public class GetSongFromSourceOne extends SongEngine {
 		}
 		if (searchPageDoc != null) {
 			String downloadPageURL = getDownloadPageUrlSourceOne(searchPageDoc,
-					"dw", "(http:\\/\\/unref\\.eu\\/)");
+					"dl", "(http:\\/\\/refs\\.pm\\/)");
 			if (downloadPageURL != null) {
-				downloadPageURL = downloadPageURL.substring(13, downloadPageURL.length()-12);
+				//downloadPageURL = downloadPageURL.substring(13, downloadPageURL.length()-12);
 				Document downloadPageDoc = null;
 				try {
 					// handle status 403 again
