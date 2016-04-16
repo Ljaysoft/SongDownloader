@@ -61,7 +61,7 @@ public class Gui implements DownloaderListener {
 	private JList<String> songList;
 	private JTextField songListFilePathText;
 	private DefaultListModel<String> songs;
-	private JLabel songsDownloadedText;
+	private JLabel progressText;
 	private JLabel songSizeUnitLbl;
 	private JLabel totalDownloadedValueLbl;
 	private JLabel totalSongsText;
@@ -181,8 +181,8 @@ public class Gui implements DownloaderListener {
 
 		frmSongdownloader = new JFrame();
 		frmSongdownloader.setTitle("SongDownloader");
-		frmSongdownloader.setBounds(100, 100, 487, 563);
-		frmSongdownloader.setResizable(false);
+		frmSongdownloader.setBounds(100, 100, 520, 620);
+		frmSongdownloader.setResizable(true);
 		frmSongdownloader.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmSongdownloader.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("icon.png")));
 		frmSongdownloader.getContentPane().setLayout(null);
@@ -248,18 +248,18 @@ public class Gui implements DownloaderListener {
 		lblProgress.setBounds(165, 452, 77, 14);
 		frmSongdownloader.getContentPane().add(lblProgress);
 
-		songsDownloadedText = new JLabel("0");
-		songsDownloadedText.setHorizontalAlignment(SwingConstants.RIGHT);
-		songsDownloadedText.setBounds(226, 452, 54, 14);
-		frmSongdownloader.getContentPane().add(songsDownloadedText);
+		progressText = new JLabel("0");
+		progressText.setHorizontalAlignment(SwingConstants.LEFT);
+		progressText.setBounds(226, 452, 54, 14);
+		frmSongdownloader.getContentPane().add(progressText);
 
 		JLabel slashLabel = new JLabel("/");
 		slashLabel.setHorizontalAlignment(SwingConstants.LEFT);
-		slashLabel.setBounds(282, 452, 15, 14);
+		slashLabel.setBounds(290, 452, 15, 14);
 		frmSongdownloader.getContentPane().add(slashLabel);
 
 		totalSongsText = new JLabel("0");
-		totalSongsText.setHorizontalAlignment(SwingConstants.LEFT);
+		totalSongsText.setHorizontalAlignment(SwingConstants.RIGHT);
 		totalSongsText.setBounds(290, 452, 46, 14);
 		frmSongdownloader.getContentPane().add(totalSongsText);
 
@@ -442,7 +442,7 @@ public class Gui implements DownloaderListener {
 
 	private void loadList() {
 		progress = 0;
-		songsDownloadedText.setText("0");
+		progressText.setText("0");
 		nbOfSongsText.setText(String.valueOf(parseSongList()));
 		downloadBtn.setText("Download");
 		downloadBtn.setEnabled(Downloader.isReady() && !songs.isEmpty());
@@ -533,7 +533,7 @@ public class Gui implements DownloaderListener {
 		} else {
 			onUpdateCurrentDownload("");
 		}
-		songsDownloadedText.setText(String.valueOf(progress));
+		progressText.setText(String.valueOf(progress)+" ("+Downloader.getDownloadCount()+")");
 		int failedNumber = Downloader.getFailedNumber();
 		notFoundNbText.setText(String.valueOf(failedNumber));
 		if (failedNumber > 0) {

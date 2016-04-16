@@ -38,7 +38,7 @@ public class GetSongFromMP3goear extends SongEngine {
 	}
 
 	public boolean search(String songTitle) {
-		searchURL = "http://mp3goear.com/mp3/";
+		searchURL = "http://mp3goear.biz/mp3/";
 		if (songTitle == null || songTitle.isEmpty())
 			return false;
 

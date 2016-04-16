@@ -13,7 +13,7 @@ import org.jsoup.select.Elements;
 
 import downloader.Downloader;
 
-public class GetSongFromMP3Mars extends SongEngine {
+public class GetSongFromSourceOne extends SongEngine {
 
 	/**
 	 * 
@@ -22,17 +22,17 @@ public class GetSongFromMP3Mars extends SongEngine {
 	 * @param regex
 	 * @return
 	 */
-	private static String getDownloadPageUrlMp3Mars(Document doc,
+	private static String getDownloadPageUrlSourceOne(Document doc,
 			String classStr, String regex) {
 		String url = null;
 		if (doc != null) {
 			Elements classes = doc.getElementsByClass(classStr);
 			if (classes != null && classes.size() > 1) {
 				Element downloadUrlElement = classes.get(1)
-						.getElementsByAttributeValueMatching("href", regex)
+						.getElementsByAttributeValueMatching("onclick", regex)
 						.first();
 				if (downloadUrlElement != null) {
-					url = downloadUrlElement.attr("href");
+					url = downloadUrlElement.attr("onclick");
 				}
 			}
 		}
@@ -46,7 +46,7 @@ public class GetSongFromMP3Mars extends SongEngine {
 	 * @param regex
 	 * @return
 	 */
-	private static String getDownloadUrlMp3Mars(Document doc, String tag,
+	private static String getDownloadUrlSourceOne(Document doc, String tag,
 			String regex) {
 		String url = null;
 		if (doc != null) {
@@ -65,7 +65,7 @@ public class GetSongFromMP3Mars extends SongEngine {
 
 	public boolean search(String songTitle) {
 		Boolean isSongFound = false;
-		searchURL = "http://www.mp3mars.com/mp3/";
+		searchURL = "http://www.myfreemp3.space/mp3/";
 		String songURL = songTitle.replaceAll("[\\&()-]", "")
 				.replaceAll("\\s+", " ").replaceAll("\\s", "+");
 		Document searchPageDoc = null;
@@ -73,8 +73,8 @@ public class GetSongFromMP3Mars extends SongEngine {
 			// handle status 403
 			searchPageDoc = Jsoup
 					.connect(searchURL + songURL)
-					.userAgent(
-							"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0")
+					.userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0")
+					.timeout(0)
 					.get();
 		} catch (SocketTimeoutException e) {
 			e.printStackTrace();
@@ -83,9 +83,10 @@ public class GetSongFromMP3Mars extends SongEngine {
 			e.printStackTrace();
 		}
 		if (searchPageDoc != null) {
-			String downloadPageURL = getDownloadPageUrlMp3Mars(searchPageDoc,
-					"dl", "(http:\\/\\/refs\\.pm\\/)");
+			String downloadPageURL = getDownloadPageUrlSourceOne(searchPageDoc,
+					"dw", "(http:\\/\\/unref\\.eu\\/)");
 			if (downloadPageURL != null) {
+				downloadPageURL = downloadPageURL.substring(13, downloadPageURL.length()-12);
 				Document downloadPageDoc = null;
 				try {
 					// handle status 403 again
@@ -100,7 +101,7 @@ public class GetSongFromMP3Mars extends SongEngine {
 					e.printStackTrace();
 				}
 				if (downloadPageDoc != null) {
-					String downloadURL = getDownloadUrlMp3Mars(downloadPageDoc,
+					String downloadURL = getDownloadUrlSourceOne(downloadPageDoc,
 							"script",
 							"((?:http|https)(?::\\/{2}[\\w]+)(?:[\\/|\\.]?)(?:[^\\s\"]*))");
 					try {

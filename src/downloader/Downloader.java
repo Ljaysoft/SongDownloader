@@ -35,7 +35,8 @@ public class Downloader {
 	private String[] mSongs;
 	private final ArrayList<String> mSongsNotFoundArray = new ArrayList<String>();
 	private String outputDir = Settings.getOutPutDir();
-	private long totalDownloaded = 0;
+	private long totalBytesDownloaded = 0;
+	private long totalSongsDownloaded = 0;
 	private int alreadyOwn = 0;
 
 	private Downloader() {
@@ -51,7 +52,8 @@ public class Downloader {
 	private static void start() throws MalformedURLException, IOException {
 		stop = false;
 		INSTANCE.mSongsNotFoundArray.clear();
-		INSTANCE.totalDownloaded = 0;
+		INSTANCE.totalBytesDownloaded = 0;
+		INSTANCE.totalSongsDownloaded = 0;
 		String songTitle;
 		Boolean isSongFound = false;
 		synchronized (INSTANCE) {
@@ -68,7 +70,7 @@ public class Downloader {
 			songTitle = INSTANCE.mSongs[i];
 			
 			// search in mp3mars
-			isSongFound = new GetSongFromMP3Mars().search(songTitle);
+			isSongFound = new GetSongFromSourceOne().search(songTitle);
 			
 			// search in MP3goer broken
 			// if (!isSongFound) {
@@ -78,13 +80,13 @@ public class Downloader {
 			// if (!isSongFound) {
 			// isSongFound = new GetSongFromXSongs().search(songTitle);
 			// }			
-
+			progress++;
 			// not found, add to the list
 			if (!isSongFound) {
 				INSTANCE.mSongsNotFoundArray.add(songTitle);
 			}
-			if (mListener != null) {
-				progress++;
+				
+			if (mListener != null) {				
 				mListener.onFileDownloaded();
 			}
 		}
@@ -193,9 +195,12 @@ public class Downloader {
 	}
 
 	public static long getTotalSize() {
-		return INSTANCE.totalDownloaded;
+		return INSTANCE.totalBytesDownloaded;
 	}
 
+	public static long getDownloadCount() {
+		return INSTANCE.totalSongsDownloaded;
+	}
 	public static boolean hasStarted() {
 		return sHasStarted;
 	}
@@ -219,14 +224,17 @@ public class Downloader {
 		if (f.exists() && f.isFile()) {
 			INSTANCE.alreadyOwn++;
 			return true;
+		} else {
+			INSTANCE.totalSongsDownloaded++;
 		}
 		BufferedInputStream in = null;
 		FileOutputStream fout = null;
 		try {
 			URL url = new URL(urlString);
-			HttpURLConnection httpcon = (HttpURLConnection) url
-					.openConnection();
+			HttpURLConnection httpcon = (HttpURLConnection) url.openConnection();
 			httpcon.addRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0");
+			httpcon.setReadTimeout(60*1000);
+			httpcon.connect();
 			in = new BufferedInputStream(httpcon.getInputStream());
 			fout = new FileOutputStream(fullName);
 			final byte data[] = new byte[4096];
@@ -245,7 +253,7 @@ public class Downloader {
 				fout.write(data, 0, count);
 				synchronized (INSTANCE) {
 					INSTANCE.currentFileSize += count;
-					INSTANCE.totalDownloaded += count;
+					INSTANCE.totalBytesDownloaded += count;
 					estimatedTime = System.nanoTime() - startTime;
 					INSTANCE.mDownloadSpeed = (int) (INSTANCE.currentFileSize
 							* 1000000000 / estimatedTime / 1024);
@@ -293,7 +301,7 @@ public class Downloader {
 			sHasStarted = false;
 			progress = 0;
 			INSTANCE.mDownloadSpeed = 0;
-			INSTANCE.totalDownloaded = 0;
+			INSTANCE.totalBytesDownloaded = 0;
 			INSTANCE.currentFileSize = 0;
 			INSTANCE.alreadyOwn = 0;
 		}
