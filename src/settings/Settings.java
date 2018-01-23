@@ -11,8 +11,7 @@ import java.util.prefs.Preferences;
  */
 public class Settings {
 	private static final Settings INSTANCE = new Settings();
-	private final Preferences prefs = Preferences.userNodeForPackage(this
-			.getClass());
+	private final Preferences prefs = Preferences.userNodeForPackage(this.getClass());
 
 	private Settings() {
 		// do not instanciate

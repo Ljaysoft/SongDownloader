@@ -192,8 +192,7 @@ public class Gui implements DownloaderListener {
 		if (!inputDir.isEmpty()) {
 			fileChooser.setCurrentDirectory(new File(inputDir));
 		} else {
-			fileChooser.setCurrentDirectory(new File(System
-					.getProperty("user.home")));
+			fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
 		}
 
 		JLabel lblSongList = new JLabel("Song list:");
@@ -448,8 +447,7 @@ public class Gui implements DownloaderListener {
 		downloadBtn.setEnabled(Downloader.isReady() && !songs.isEmpty());
 		Downloader.stop();
 		progressBar.setValue(Downloader.getProgress());
-		nbAlreadyOwnedValueLbl.setText(String.valueOf(Downloader
-				.getNumberOwned()));
+		nbAlreadyOwnedValueLbl.setText(String.valueOf(Downloader.getNumberOwned()));
 		nbAlreadyOwnedValueLbl.setForeground(Color.black);
 		notFoundNbText.setText("0");
 		notFoundNbText.setForeground(Color.black);
@@ -460,8 +458,7 @@ public class Gui implements DownloaderListener {
 
 	private void openOutputDir() {
 		try {
-			java.awt.Desktop.getDesktop().open(
-					new File(Downloader.getOutputDir()));
+			java.awt.Desktop.getDesktop().open(new File(Downloader.getOutputDir()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -496,8 +493,7 @@ public class Gui implements DownloaderListener {
 		File[] logs = dir.listFiles(new java.io.FileFilter() {
 			public boolean accept(File pathname) {
 				String name = pathname.getName();
-				String extension = name.substring(name.lastIndexOf(".") + 1,
-						name.length());
+				String extension = name.substring(name.lastIndexOf(".") + 1, name.length());
 				return pathname.isFile() && extension.equals("log");
 			}
 		});
@@ -525,15 +521,14 @@ public class Gui implements DownloaderListener {
 		progress++;
 		progressBar.setValue(Downloader.getProgress());
 		if (Downloader.getProgress() == 100) {
-			downloadBtn
-					.setText("<HTML><center>Click here to view files.<center></HTML>");
+			downloadBtn.setText("<HTML><center>Click here to view files.<center></HTML>");
 			downloadBtn.setEnabled(true);
 			abortBtn.setEnabled(false);
 			onUpdateCurrentDownload("Download Done");
 		} else {
 			onUpdateCurrentDownload("");
 		}
-		progressText.setText(String.valueOf(progress)+" ("+Downloader.getDownloadCount()+")");
+		progressText.setText(String.valueOf(progress) + " (" + Downloader.getDownloadCount() + ")");
 		int failedNumber = Downloader.getFailedNumber();
 		notFoundNbText.setText(String.valueOf(failedNumber));
 		if (failedNumber > 0) {
@@ -548,8 +543,7 @@ public class Gui implements DownloaderListener {
 	}
 
 	public void onUpdateCurrentDownload(String title) {
-		currDownloadTitleLbl.setText("<html><div align=\"left\">" + title
-				+ "</div></html>");
+		currDownloadTitleLbl.setText("<html><div align=\"left\">" + title + "</div></html>");
 	}
 
 	public void onUpdateSpeed() {
@@ -557,20 +551,15 @@ public class Gui implements DownloaderListener {
 		long currentSizeByte = Downloader.getCurrentFileSize();
 		if (currentSizeByte / 1024 > 1000) { // in mB
 			int remainder = (int) (currentSizeByte % 1048576 * 100 / 1048576);
-			fileSizeValueLbl
-					.setText(String.valueOf(currentSizeByte / 1048576)
-							+ "."
-							+ (remainder == 0 ? "00" : String
-									.valueOf(remainder)));
+			fileSizeValueLbl.setText(String.valueOf(currentSizeByte / 1048576) + "."
+					+ (remainder == 0 ? "00" : String.valueOf(remainder)));
 			songSizeUnitLbl.setText("mB");
 		} else {
-			fileSizeValueLbl.setText(String.valueOf(Downloader
-					.getCurrentFileSize() / 1024)); // in kB
+			fileSizeValueLbl.setText(String.valueOf(Downloader.getCurrentFileSize() / 1024)); // in kB
 			songSizeUnitLbl.setText("kB");
 		}
 
-		totalDownloadedValueLbl.setText(String.valueOf(Downloader
-				.getTotalSize() / 1048576));
+		totalDownloadedValueLbl.setText(String.valueOf(Downloader.getTotalSize() / 1048576));
 	}
 
 	private class SongListRenderer extends DefaultListCellRenderer {
@@ -578,11 +567,9 @@ public class Gui implements DownloaderListener {
 		private static final long serialVersionUID = -6027297447224041122L;
 
 		@Override
-		public Component getListCellRendererComponent(JList<?> list,
-				Object value, int index, boolean isSelected,
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
 				boolean cellHasFocus) {
-			super.getListCellRendererComponent(list, value, index, isSelected,
-					cellHasFocus);
+			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
 			if (Downloader.getFailedSongs().contains(value.toString())) {
 				setForeground(Color.red);

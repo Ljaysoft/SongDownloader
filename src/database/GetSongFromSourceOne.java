@@ -22,23 +22,20 @@ public class GetSongFromSourceOne extends SongEngine {
 	 * @param regex
 	 * @return
 	 */
-	private static String getDownloadPageUrlSourceOne(Document doc,
-			String classStr, String regex) {
+	private static String getDownloadPageUrlSourceOne(Document doc, String classStr, String regex) {
 		String url = null;
 		if (doc != null) {
 			Elements classes = doc.getElementsByClass(classStr);
 			//Elements classes2 = doc.getElementsByClass("item");
 			if (classes != null && classes.size() > 1) {
 				Element downloadUrlElement = null;
-				for (int i = 0;i<classes.size();i++){
-					downloadUrlElement = classes.get(i)
-							.getElementsByAttributeValueMatching("href", regex)
-							.first();
+				for (int i = 0; i < classes.size(); i++) {
+					downloadUrlElement = classes.get(i).getElementsByAttributeValueMatching("href", regex).first();
 					if (downloadUrlElement != null) {
 						url = downloadUrlElement.attr("href");
 						break;
 					}
-				}				
+				}
 			}
 		}
 		return url;
@@ -51,8 +48,7 @@ public class GetSongFromSourceOne extends SongEngine {
 	 * @param regex
 	 * @return
 	 */
-	private static String getDownloadUrlSourceOne(Document doc, String tag,
-			String regex) {
+	private static String getDownloadUrlSourceOne(Document doc, String tag, String regex) {
 		String url = null;
 		if (doc != null) {
 			Element div = doc.select(tag).first();
@@ -70,16 +66,13 @@ public class GetSongFromSourceOne extends SongEngine {
 
 	public boolean search(String songTitle) {
 		Boolean isSongFound = false;
-		searchURL = "http://mp3zzz.net/mp3/";
-		String songURL = songTitle.replaceAll("[\\&()-]", "")
-				.replaceAll("\\s+", " ").replaceAll("\\s", "+");
+		searchURL = "http://www.worldmp3.site/mp3/";
+		String songURL = songTitle.replaceAll("[\\&()-]", "").replaceAll("\\s+", " ").replaceAll("\\s", "+");
 		Document searchPageDoc = null;
 		try {
 			// handle status 403
-			searchPageDoc = Jsoup
-					.connect(searchURL + songURL)
-					.userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0")
-					.timeout(0)
+			searchPageDoc = Jsoup.connect(searchURL + songURL)
+					.userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0").timeout(0)
 					.get();
 		} catch (SocketTimeoutException e) {
 			e.printStackTrace();
@@ -88,17 +81,14 @@ public class GetSongFromSourceOne extends SongEngine {
 			e.printStackTrace();
 		}
 		if (searchPageDoc != null) {
-			String downloadPageURL = getDownloadPageUrlSourceOne(searchPageDoc,
-					"dl", "(http:\\/\\/refs\\.pm\\/)");
+			String downloadPageURL = getDownloadPageUrlSourceOne(searchPageDoc, "dl", "(http:\\/\\/refs\\.pm\\/)");
 			if (downloadPageURL != null) {
 				//downloadPageURL = downloadPageURL.substring(13, downloadPageURL.length()-12);
 				Document downloadPageDoc = null;
 				try {
 					// handle status 403 again
-					downloadPageDoc = Jsoup
-							.connect(downloadPageURL)
-							.userAgent(
-									"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0")
+					downloadPageDoc = Jsoup.connect(downloadPageURL)
+							.userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0")
 							.get();
 				} catch (SocketTimeoutException e) {
 					e.printStackTrace();
@@ -106,8 +96,7 @@ public class GetSongFromSourceOne extends SongEngine {
 					e.printStackTrace();
 				}
 				if (downloadPageDoc != null) {
-					String downloadURL = getDownloadUrlSourceOne(downloadPageDoc,
-							"script",
+					String downloadURL = getDownloadUrlSourceOne(downloadPageDoc, "script",
 							"((?:http|https)(?::\\/{2}[\\w]+)(?:[\\/|\\.]?)(?:[^\\s\"]*))");
 					try {
 						if (Downloader.saveUrl(songTitle, downloadURL)) {

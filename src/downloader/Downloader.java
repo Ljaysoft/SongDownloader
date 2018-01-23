@@ -68,10 +68,10 @@ public class Downloader {
 				}
 			}
 			songTitle = INSTANCE.mSongs[i];
-			
+
 			// search in mp3mars
 			isSongFound = new GetSongFromSourceOne().search(songTitle);
-			
+
 			// search in MP3goer broken
 			// if (!isSongFound) {
 			//isSongFound = new GetSongFromMP3goear().search(songTitle);
@@ -85,20 +85,17 @@ public class Downloader {
 			if (!isSongFound) {
 				INSTANCE.mSongsNotFoundArray.add(songTitle);
 			}
-				
-			if (mListener != null) {				
+
+			if (mListener != null) {
 				mListener.onFileDownloaded();
 			}
 		}
 		// write failed songs into logfile
 		if (!INSTANCE.mSongsNotFoundArray.isEmpty()) {
 			try {
-				String timeLog = new SimpleDateFormat("yyyyMMdd_HHmmss")
-						.format(Calendar.getInstance().getTime());
-				File failedSongFile = new File(INSTANCE.outputDir + "\\"
-						+ "failed_song_" + timeLog + ".log");
-				BufferedWriter writer = new BufferedWriter(new FileWriter(
-						failedSongFile));
+				String timeLog = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+				File failedSongFile = new File(INSTANCE.outputDir + "\\" + "failed_song_" + timeLog + ".log");
+				BufferedWriter writer = new BufferedWriter(new FileWriter(failedSongFile));
 				for (String song : INSTANCE.mSongsNotFoundArray) {
 					writer.write(song);
 					writer.newLine();
@@ -142,7 +139,7 @@ public class Downloader {
 			return;
 		}
 	}
-	
+
 	public static int getNumberOwned() {
 		return INSTANCE.alreadyOwn;
 	}
@@ -201,6 +198,7 @@ public class Downloader {
 	public static long getDownloadCount() {
 		return INSTANCE.totalSongsDownloaded;
 	}
+
 	public static boolean hasStarted() {
 		return sHasStarted;
 	}
@@ -232,8 +230,9 @@ public class Downloader {
 		try {
 			URL url = new URL(urlString);
 			HttpURLConnection httpcon = (HttpURLConnection) url.openConnection();
-			httpcon.addRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0");
-			httpcon.setReadTimeout(60*1000);
+			httpcon.addRequestProperty("User-Agent",
+					"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0");
+			httpcon.setReadTimeout(60 * 1000);
 			httpcon.connect();
 			in = new BufferedInputStream(httpcon.getInputStream());
 			fout = new FileOutputStream(fullName);
@@ -255,8 +254,7 @@ public class Downloader {
 					INSTANCE.currentFileSize += count;
 					INSTANCE.totalBytesDownloaded += count;
 					estimatedTime = System.nanoTime() - startTime;
-					INSTANCE.mDownloadSpeed = (int) (INSTANCE.currentFileSize
-							* 1000000000 / estimatedTime / 1024);
+					INSTANCE.mDownloadSpeed = (int) (INSTANCE.currentFileSize * 1000000000 / estimatedTime / 1024);
 					if (mListener != null) {
 						mListener.onUpdateSpeed();
 					}
