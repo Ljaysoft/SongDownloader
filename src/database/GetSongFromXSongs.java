@@ -37,7 +37,6 @@ public class GetSongFromXSongs extends SongEngine {
 		searchURL = "http://xsongs.pk/";
 		if (songTitle == null || songTitle.isEmpty())
 			return false;
-		String foo = new String();
 
 		Boolean isSongFound = false;
 		String songURL = songTitle.replaceAll("[\\&()]", "").replaceAll("-", "").replaceAll("\\s+", " ")
